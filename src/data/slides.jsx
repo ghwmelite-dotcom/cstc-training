@@ -384,6 +384,25 @@ Now, let's move on to Trello!`,
     }
   },
 
+  // Calendar: Mobile Setup
+  {
+    id: 'calendar-mobile-setup',
+    type: 'mobilesetup',
+    tool: 'calendar',
+    steps: 1,
+    notes: {
+      say: `Here's how to get Calendar on your phone - it's really simple.
+
+For Android, the app is usually pre-installed. Just open it and sign in with your Gmail.
+
+For iPhone, download Google Calendar from the App Store, then sign in.
+
+You can download this guide to take with you - there's a button on the slide.`,
+      keyPoint: 'Having Calendar on your phone means you can block time from anywhere',
+      time: '1 min'
+    }
+  },
+
   // ============================================
   // PART 2: TRELLO
   // ============================================
@@ -569,6 +588,25 @@ Now let's look at Asana for when things get more complex.`,
     }
   },
 
+  // Trello: Mobile Setup
+  {
+    id: 'trello-mobile-setup',
+    type: 'mobilesetup',
+    tool: 'trello',
+    steps: 1,
+    notes: {
+      say: `Want Trello on your phone? Here's how to set it up.
+
+Download the Trello app from the Play Store or App Store. Sign in with the same account you just created.
+
+The mobile app is great for quickly adding tasks when you think of them - waiting for a meeting to start, on your commute, wherever.
+
+Download this guide to reference later!`,
+      keyPoint: 'Mobile Trello = capture tasks anywhere, anytime',
+      time: '1 min'
+    }
+  },
+
   // ============================================
   // PART 3: ASANA
   // ============================================
@@ -741,6 +779,25 @@ You have 5 minutes. I'll help!`,
     }
   },
 
+  // Asana: Mobile Setup
+  {
+    id: 'asana-mobile-setup',
+    type: 'mobilesetup',
+    tool: 'asana',
+    steps: 1,
+    notes: {
+      say: `Here's how to get Asana on your phone.
+
+Download Asana from your app store and sign in with the same work email.
+
+The mobile app lets you check on projects, mark tasks complete, and add notes from anywhere.
+
+Perfect for when you're away from your desk but want to stay on top of things.`,
+      keyPoint: 'Mobile Asana = project visibility on the go',
+      time: '1 min'
+    }
+  },
+
   // ============================================
   // WHICH TOOL WHEN?
   // ============================================
@@ -855,6 +912,27 @@ And of course, the IT Help Desk is here for account issues.
 
 I'd recommend bookmarking the Trello and Asana guides - they have great video tutorials.`,
       time: '1 min'
+    }
+  },
+
+  // ============================================
+  // MOBILE GUIDES DOWNLOAD
+  // ============================================
+  {
+    id: 'all-guides-download',
+    type: 'allguides',
+    steps: 1,
+    notes: {
+      say: `Before we finish, here's something useful to take with you.
+
+You can download mobile setup guides for all three tools - Google Calendar, Trello, and Asana.
+
+Each guide has step-by-step instructions for both Android and iPhone.
+
+Take a moment to download these - tap any card for individual guides, or the big green button for all three at once.`,
+      do: ['Give everyone a moment to download', 'Help anyone having trouble'],
+      keyPoint: 'Tangible takeaways help retention',
+      time: '2 min'
     }
   },
 

@@ -22,6 +22,7 @@ import { FollowUpSlide } from './components/slides/FollowUpSlide';
 import { HeroSlide, SectionHeroSlide } from './components/slides/HeroSlide';
 import { GlassContentSlide, GlassBulletList, GlassThreeColumn, GlassStatCard, FeatureShowcase } from './components/slides/GlassContentSlide';
 import { ActionSlide, StepByStepSlide, ComparisonSlide, KeyPointSlide, ChecklistSlide } from './components/slides/ActionSlide';
+import { MobileSetupSlide, AllGuidesDownloadSlide } from './components/slides/MobileSetupSlide';
 
 import { ProgressBar } from './components/ui/ProgressBar';
 import { Navigation } from './components/ui/Navigation';
@@ -372,6 +373,18 @@ function App() {
               items={slide.items}
               timer={slide.timer}
             />
+          );
+          break;
+
+        case 'mobilesetup':
+          component = (
+            <MobileSetupSlide tool={slide.tool} />
+          );
+          break;
+
+        case 'allguides':
+          component = (
+            <AllGuidesDownloadSlide />
           );
           break;
 
