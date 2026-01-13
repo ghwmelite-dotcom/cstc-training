@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Unlock, Shield, Delete, Eye, EyeOff, CheckCircle2, XCircle, Fingerprint } from 'lucide-react';
+import { Lock, Unlock, Delete, Eye, EyeOff, XCircle } from 'lucide-react';
 
 // Configure your PIN here (in production, this would be environment-based)
 const CORRECT_PIN = '2026';
@@ -128,12 +128,12 @@ export function PinProtection({ children, onAuthenticated }) {
   const keypadNumbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'delete'];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden overflow-y-auto py-4 sm:py-6">
       {/* Animated background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
-        {/* Animated orbs */}
+        {/* Animated orbs - smaller on mobile */}
         <motion.div
-          className="absolute w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+          className="absolute w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-cyan-500/20 rounded-full blur-3xl"
           animate={{
             x: [0, 100, 0],
             y: [0, -50, 0],
@@ -143,7 +143,7 @@ export function PinProtection({ children, onAuthenticated }) {
           style={{ top: '-10%', left: '-10%' }}
         />
         <motion.div
-          className="absolute w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"
+          className="absolute w-40 h-40 sm:w-60 sm:h-60 md:w-80 md:h-80 bg-purple-500/20 rounded-full blur-3xl"
           animate={{
             x: [0, -80, 0],
             y: [0, 100, 0],
@@ -153,7 +153,7 @@ export function PinProtection({ children, onAuthenticated }) {
           style={{ bottom: '-10%', right: '-10%' }}
         />
         <motion.div
-          className="absolute w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl"
+          className="absolute w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-emerald-500/10 rounded-full blur-3xl"
           animate={{
             x: [0, 50, 0],
             y: [0, -80, 0]
@@ -178,16 +178,16 @@ export function PinProtection({ children, onAuthenticated }) {
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="relative z-10 w-full max-w-md mx-4"
+        className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-3 sm:mx-4"
       >
         {/* Glass card */}
         <motion.div
           animate={error ? { x: [-10, 10, -10, 10, 0] } : {}}
           transition={{ duration: 0.4 }}
-          className="bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden"
+          className="bg-white/10 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-white/20 shadow-2xl overflow-hidden"
         >
           {/* Header */}
-          <div className="relative px-8 pt-10 pb-6 text-center">
+          <div className="relative px-4 sm:px-8 pt-6 sm:pt-10 pb-4 sm:pb-6 text-center">
             {/* Success overlay */}
             <AnimatePresence>
               {success && (
@@ -207,54 +207,63 @@ export function PinProtection({ children, onAuthenticated }) {
                       animate={{ rotate: [0, 360] }}
                       transition={{ duration: 0.5 }}
                     >
-                      <Unlock className="w-16 h-16 text-emerald-400 mx-auto mb-3" />
+                      <Unlock className="w-12 h-12 sm:w-16 sm:h-16 text-emerald-400 mx-auto mb-2 sm:mb-3" />
                     </motion.div>
-                    <p className="text-emerald-400 font-semibold text-lg">Access Granted</p>
+                    <p className="text-emerald-400 font-semibold text-base sm:text-lg">Access Granted</p>
                   </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Logo/Icon */}
+            {/* CSTC Logo */}
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
               transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-              className="relative inline-block mb-6"
+              className="relative inline-block mb-4 sm:mb-6"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                <motion.div
-                  animate={isLocked ? { rotate: [0, -10, 10, -10, 0] } : {}}
-                  transition={{ duration: 0.5, repeat: isLocked ? Infinity : 0, repeatDelay: 2 }}
-                >
-                  {isLocked ? (
-                    <Lock className="w-10 h-10 text-white" />
-                  ) : (
-                    <Shield className="w-10 h-10 text-white" />
-                  )}
-                </motion.div>
-              </div>
+              <motion.div
+                animate={isLocked ? { rotate: [0, -3, 3, -3, 0] } : {}}
+                transition={{ duration: 0.5, repeat: isLocked ? Infinity : 0, repeatDelay: 2 }}
+                className="relative"
+              >
+                <img
+                  src="/cstc-logo.jpg"
+                  alt="CSTC Logo"
+                  className="w-20 h-20 sm:w-28 sm:h-28 rounded-full object-cover shadow-xl shadow-cyan-500/20 border-2 border-white/20"
+                />
+                {/* Lock overlay when locked */}
+                {isLocked && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute inset-0 bg-red-500/30 rounded-full flex items-center justify-center backdrop-blur-sm"
+                  >
+                    <Lock className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
+                  </motion.div>
+                )}
+              </motion.div>
 
               {/* Pulse ring */}
               <motion.div
-                className="absolute inset-0 rounded-2xl border-2 border-cyan-400/50"
-                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                className="absolute inset-0 rounded-full border-2 border-cyan-400/50"
+                animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
             </motion.div>
 
             {/* Title */}
-            <h1 className="text-2xl font-bold text-white mb-2">
-              CSTC Training Portal
+            <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">
+              Productivity Tools Training
             </h1>
-            <p className="text-white/60 text-sm">
+            <p className="text-white/60 text-xs sm:text-sm">
               Enter your PIN to access the presentation
             </p>
           </div>
 
           {/* PIN Display */}
-          <div className="px-8 pb-6">
-            <div className="flex justify-center items-center gap-3 mb-2">
+          <div className="px-4 sm:px-8 pb-4 sm:pb-6">
+            <div className="flex justify-center items-center gap-2 sm:gap-3 mb-2">
               {[...Array(CORRECT_PIN.length)].map((_, i) => (
                 <motion.div
                   key={i}
@@ -270,7 +279,7 @@ export function PinProtection({ children, onAuthenticated }) {
                       : 'rgba(255, 255, 255, 0.1)'
                   }}
                   transition={{ delay: i * 0.05 }}
-                  className={`w-12 h-14 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${
+                  className={`w-10 h-12 sm:w-12 sm:h-14 rounded-lg sm:rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${
                     pin.length > i
                       ? error
                         ? 'border-red-500 shadow-lg shadow-red-500/30'
@@ -284,7 +293,7 @@ export function PinProtection({ children, onAuthenticated }) {
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="text-white text-xl font-bold"
+                      className="text-white text-lg sm:text-xl font-bold"
                     >
                       {showPin ? pin[i] : '•'}
                     </motion.span>
@@ -295,9 +304,9 @@ export function PinProtection({ children, onAuthenticated }) {
               {/* Show/Hide toggle */}
               <button
                 onClick={() => setShowPin(!showPin)}
-                className="ml-2 p-2 text-white/40 hover:text-white/80 transition-colors"
+                className="ml-1 sm:ml-2 p-1.5 sm:p-2 text-white/40 hover:text-white/80 transition-colors"
               >
-                {showPin ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPin ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
             </div>
 
@@ -308,9 +317,9 @@ export function PinProtection({ children, onAuthenticated }) {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="flex items-center justify-center gap-2 text-red-400 text-sm mb-4"
+                  className="flex items-center justify-center gap-1.5 sm:gap-2 text-red-400 text-xs sm:text-sm mb-3 sm:mb-4"
                 >
-                  <XCircle className="w-4 h-4" />
+                  <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                   {isLocked ? (
                     <span>Too many attempts. Try again in {lockCountdown}s</span>
                   ) : (
@@ -322,8 +331,8 @@ export function PinProtection({ children, onAuthenticated }) {
           </div>
 
           {/* Keypad */}
-          <div className="px-8 pb-8">
-            <div className="grid grid-cols-3 gap-3">
+          <div className="px-4 sm:px-8 pb-6 sm:pb-8">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {keypadNumbers.map((key, index) => (
                 <motion.button
                   key={key}
@@ -335,7 +344,7 @@ export function PinProtection({ children, onAuthenticated }) {
                   onClick={() => handleKeyPress(key)}
                   disabled={isLocked || success}
                   className={`
-                    h-16 rounded-xl font-semibold text-xl transition-all duration-200
+                    h-12 sm:h-16 rounded-lg sm:rounded-xl font-semibold text-lg sm:text-xl transition-all duration-200
                     ${isLocked || success ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                     ${key === 'delete' || key === 'clear'
                       ? 'bg-white/5 text-white/60 hover:text-white'
@@ -345,9 +354,9 @@ export function PinProtection({ children, onAuthenticated }) {
                   `}
                 >
                   {key === 'delete' ? (
-                    <Delete className="w-6 h-6 mx-auto" />
+                    <Delete className="w-5 h-5 sm:w-6 sm:h-6 mx-auto" />
                   ) : key === 'clear' ? (
-                    <span className="text-sm">Clear</span>
+                    <span className="text-xs sm:text-sm">Clear</span>
                   ) : (
                     key
                   )}
@@ -357,19 +366,19 @@ export function PinProtection({ children, onAuthenticated }) {
           </div>
 
           {/* Footer */}
-          <div className="px-8 pb-6 text-center">
-            <p className="text-white/30 text-xs">
+          <div className="px-4 sm:px-8 pb-4 sm:pb-6 text-center">
+            <p className="text-white/30 text-[10px] sm:text-xs">
               Civil Service Training Centre • Productivity Tools Training
             </p>
           </div>
         </motion.div>
 
-        {/* Keyboard hint */}
+        {/* Keyboard hint - hidden on very small screens */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="text-center text-white/30 text-sm mt-6"
+          className="hidden sm:block text-center text-white/30 text-xs sm:text-sm mt-4 sm:mt-6"
         >
           You can also use your keyboard to enter the PIN
         </motion.p>
