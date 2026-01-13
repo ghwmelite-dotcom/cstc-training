@@ -77,7 +77,7 @@ export function CalendarDemo({ step = 0 }) {
                 <ChevronRight size={20} className="text-white/60" />
               </motion.button>
             </div>
-            <h3 className="font-bold text-white">January 2025</h3>
+            <h3 className="font-bold text-white">January 2026</h3>
           </div>
           <div className="flex items-center gap-2">
             <button className="px-3 py-1.5 text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all">
@@ -119,7 +119,7 @@ export function CalendarDemo({ step = 0 }) {
                     }`}
                     whileHover={{ scale: 1.1 }}
                   >
-                    {13 + dayIndex}
+                    {12 + dayIndex}
                   </motion.span>
                 </div>
 
