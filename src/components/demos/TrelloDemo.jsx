@@ -1,7 +1,7 @@
 import { useTheme } from '../../hooks/useTheme';
-import { useState } from 'react';
-import { motion, Reorder, AnimatePresence } from 'framer-motion';
-import { MoreHorizontal, Plus, User, Calendar, Tag, Sparkles, Lightbulb, ArrowRight, GripVertical } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MoreHorizontal, Plus, Calendar, Sparkles, Lightbulb, ArrowRight, GripVertical } from 'lucide-react';
 
 const initialData = {
   lists: [
@@ -75,15 +75,87 @@ function Annotation({ children, position, delay = 0, color = 'cyan' }) {
 export function TrelloDemo({ interactive = true, step = 0 }) {
   const { isDark } = useTheme();
   const [data, setData] = useState(initialData);
+  const [draggedCard, setDraggedCard] = useState(null);
+  const [draggedFromList, setDraggedFromList] = useState(null);
+  const [dropTargetList, setDropTargetList] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleReorder = (listId, newCards) => {
+  // Handle drag start
+  const handleDragStart = (e, card, listId) => {
     if (!interactive) return;
-    setData(prev => ({
-      ...prev,
-      lists: prev.lists.map(list =>
-        list.id === listId ? { ...list, cards: newCards } : list
-      ),
-    }));
+    setDraggedCard(card);
+    setDraggedFromList(listId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', card.id);
+  };
+
+  // Handle drag over list
+  const handleDragOver = (e, listId) => {
+    if (!interactive) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDropTargetList(listId);
+  };
+
+  // Handle drag leave
+  const handleDragLeave = (e, listId) => {
+    if (!interactive) return;
+    // Only clear if we're actually leaving the list (not entering a child)
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setDropTargetList(null);
+    }
+  };
+
+  // Handle drop
+  const handleDrop = (e, targetListId) => {
+    if (!interactive || !draggedCard) return;
+    e.preventDefault();
+
+    if (draggedFromList === targetListId) {
+      // Same list - just reorder (simplified: move to end)
+      setDraggedCard(null);
+      setDraggedFromList(null);
+      setDropTargetList(null);
+      return;
+    }
+
+    // Move card to new list
+    setData(prev => {
+      const newLists = prev.lists.map(list => {
+        if (list.id === draggedFromList) {
+          // Remove from source list
+          return {
+            ...list,
+            cards: list.cards.filter(c => c.id !== draggedCard.id)
+          };
+        }
+        if (list.id === targetListId) {
+          // Add to target list
+          return {
+            ...list,
+            cards: [...list.cards, draggedCard]
+          };
+        }
+        return list;
+      });
+      return { ...prev, lists: newLists };
+    });
+
+    // Show success animation
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 1500);
+
+    // Clear drag state
+    setDraggedCard(null);
+    setDraggedFromList(null);
+    setDropTargetList(null);
+  };
+
+  // Handle drag end
+  const handleDragEnd = () => {
+    setDraggedCard(null);
+    setDraggedFromList(null);
+    setDropTargetList(null);
   };
 
   return (
@@ -105,6 +177,21 @@ export function TrelloDemo({ interactive = true, step = 0 }) {
         style={{ bottom: '-10%', left: '-5%' }}
       />
 
+      {/* Success notification */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-white px-4 py-2 rounded-xl shadow-lg flex items-center gap-2"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="font-medium">Card moved successfully!</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="relative p-5">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
@@ -117,7 +204,7 @@ export function TrelloDemo({ interactive = true, step = 0 }) {
             </motion.div>
             <div>
               <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-slate-800'}`}>Q1 Policy Review Project</h3>
-              <p className={`text-sm ${isDark ? 'text-white/60' : 'text-slate-500'}`}>4 lists | 7 cards</p>
+              <p className={`text-sm ${isDark ? 'text-white/60' : 'text-slate-500'}`}>4 lists | {data.lists.reduce((acc, l) => acc + l.cards.length, 0)} cards</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -152,9 +239,16 @@ export function TrelloDemo({ interactive = true, step = 0 }) {
               animate={{ opacity: step >= listIndex ? 1 : 0.4, y: 0 }}
               transition={{ delay: listIndex * 0.1 }}
               className="relative"
+              onDragOver={(e) => handleDragOver(e, list.id)}
+              onDragLeave={(e) => handleDragLeave(e, list.id)}
+              onDrop={(e) => handleDrop(e, list.id)}
             >
               {/* List container */}
-              <div className="bg-slate-900/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-xl p-3 min-w-[250px] max-w-[250px] border border-white/10 shadow-xl">
+              <div className={`bg-slate-900/60 backdrop-blur-xl rounded-xl p-3 min-w-[250px] max-w-[250px] border shadow-xl transition-all duration-200 ${
+                dropTargetList === list.id && draggedFromList !== list.id
+                  ? 'border-cyan-400 ring-2 ring-cyan-400/50 scale-[1.02]'
+                  : 'border-white/10'
+              }`}>
                 {/* List header */}
                 <div className="flex items-center justify-between px-2 py-1.5 mb-3">
                   <h4 className="font-bold text-white text-sm flex items-center gap-2">
@@ -169,26 +263,30 @@ export function TrelloDemo({ interactive = true, step = 0 }) {
                 </div>
 
                 {/* Cards */}
-                {interactive ? (
-                  <Reorder.Group
-                    axis="y"
-                    values={list.cards}
-                    onReorder={(newCards) => handleReorder(list.id, newCards)}
-                    className="space-y-3"
-                  >
-                    {list.cards.map((card) => (
-                      <Reorder.Item key={card.id} value={card}>
-                        <TrelloCard card={card} />
-                      </Reorder.Item>
-                    ))}
-                  </Reorder.Group>
-                ) : (
-                  <div className="space-y-3">
-                    {list.cards.map((card) => (
-                      <TrelloCard key={card.id} card={card} />
-                    ))}
-                  </div>
-                )}
+                <div className="space-y-3 min-h-[50px]">
+                  {list.cards.map((card) => (
+                    <TrelloCard
+                      key={card.id}
+                      card={card}
+                      listId={list.id}
+                      interactive={interactive}
+                      isDragging={draggedCard?.id === card.id}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                    />
+                  ))}
+
+                  {/* Drop zone indicator when empty or dragging */}
+                  {dropTargetList === list.id && draggedFromList !== list.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 60 }}
+                      className="border-2 border-dashed border-cyan-400/50 rounded-xl bg-cyan-400/10 flex items-center justify-center"
+                    >
+                      <span className="text-cyan-400 text-sm">Drop here</span>
+                    </motion.div>
+                  )}
+                </div>
 
                 {/* Add card button */}
                 <motion.button
@@ -253,12 +351,18 @@ export function TrelloDemo({ interactive = true, step = 0 }) {
   );
 }
 
-function TrelloCard({ card }) {
+function TrelloCard({ card, listId, interactive, isDragging, onDragStart, onDragEnd }) {
   return (
     <motion.div
-      className="bg-slate-800/80 rounded-xl p-3.5 shadow-lg border border-white/10 cursor-grab active:cursor-grabbing hover:border-white/30 transition-all group"
-      whileHover={{ scale: 1.02, y: -2 }}
+      draggable={interactive}
+      onDragStart={(e) => onDragStart(e, card, listId)}
+      onDragEnd={onDragEnd}
+      className={`bg-slate-800/80 rounded-xl p-3.5 shadow-lg border border-white/10 cursor-grab active:cursor-grabbing hover:border-white/30 transition-all group ${
+        isDragging ? 'opacity-50 scale-95 ring-2 ring-cyan-400' : ''
+      }`}
+      whileHover={!isDragging ? { scale: 1.02, y: -2 } : {}}
       whileTap={{ scale: 0.98 }}
+      layout
     >
       {/* Labels */}
       {card.labels.length > 0 && (
