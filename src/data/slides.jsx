@@ -340,7 +340,7 @@ I'll give you 3 minutes. When you're done, give me a thumbs up!`,
     title: 'Pro Tips for Calendar',
     items: [
       { title: 'Use "Find a time"', description: 'When scheduling with others, this shows when everyone is free' },
-      { title: 'Make meetings 25 or 50 minutes', description: 'Not 30 or 60 - gives you buffer time between meetings' },
+      { title: 'Make meetings 25 or 50 minutes', description: 'Enable "Speedy meetings" in Settings → Event settings. Gives you buffer time between meetings!' },
       { title: 'Add video links automatically', description: 'Click "Add Google Meet" - link appears for everyone invited' },
     ],
     listType: 'solution',
@@ -350,14 +350,16 @@ I'll give you 3 minutes. When you're done, give me a thumbs up!`,
 
 First: "Find a time" - when you're scheduling with others, there's a tab called "Find a time" that shows everyone's availability. No more emailing back and forth asking "does 2pm work?"
 
-Second: Make your meetings 25 or 50 minutes instead of 30 or 60. You get a 5-10 minute buffer. Trust me, you'll thank yourself.
+Second: Make your meetings 25 or 50 minutes instead of 30 or 60. Here's a game-changer - Google Calendar can do this AUTOMATICALLY! Go to Settings, then Event settings, and turn on "Speedy meetings." Now every 30-minute meeting becomes 25, and every hour becomes 50. You get built-in buffer time to breathe, walk to the next meeting, or grab coffee.
 
 Third: Add video links with one click. If you're scheduling a virtual meeting, click "Add Google Meet" and the link is automatically included.
 
 Any questions on Calendar before we move to Trello?`,
+      do: ['Show where Settings is (gear icon top right)', 'Mention this is a one-time setup that saves time forever'],
       ifAsked: [
         { q: 'How do I share my calendar?', a: 'Click the three dots next to your calendar name, then "Settings and sharing." You can make it visible to your team.' },
-        { q: 'Can I have multiple calendars?', a: 'Yes! Many people have Work, Personal, and maybe a Team calendar. You can toggle them on and off.' }
+        { q: 'Can I have multiple calendars?', a: 'Yes! Many people have Work, Personal, and maybe a Team calendar. You can toggle them on and off.' },
+        { q: 'Where is Speedy meetings?', a: 'Click the gear icon (Settings) → Event settings → check "Speedy meetings" box.' }
       ],
       time: '2 min'
     }
