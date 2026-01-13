@@ -5,6 +5,7 @@ import { usePresenterMode } from './hooks/usePresenterMode';
 import { useQuizState } from './hooks/useQuizState';
 import { useGamification } from './hooks/useGamification';
 import { useTheme } from './hooks/useTheme';
+import { PinProtection } from './components/auth/PinProtection';
 
 import { SlideContainer } from './components/slides/SlideContainer';
 import { TitleSlide, SectionTitleSlide } from './components/slides/TitleSlide';
@@ -405,16 +406,21 @@ function App() {
 
   // Render presenter view if in presenter mode
   if (isPresenterView) {
-    return <PresenterView slides={slides} currentSlide={currentSlide} currentStep={currentStep} />;
+    return (
+      <PinProtection>
+        <PresenterView slides={slides} currentSlide={currentSlide} currentStep={currentStep} />
+      </PinProtection>
+    );
   }
 
   const currentSlideConfig = slidesConfig[currentSlide];
 
   return (
-    <div
-      className="h-screen w-screen overflow-hidden select-none relative"
-      {...handlers}
-    >
+    <PinProtection>
+      <div
+        className="h-screen w-screen overflow-hidden select-none relative"
+        {...handlers}
+      >
       {/* Animated background - theme aware */}
       <div className={`absolute inset-0 transition-colors duration-500 ${
         isDark
@@ -570,7 +576,8 @@ function App() {
         isOpen={showKeyboardHelp}
         onClose={() => setShowKeyboardHelp(false)}
       />
-    </div>
+      </div>
+    </PinProtection>
   );
 }
 
