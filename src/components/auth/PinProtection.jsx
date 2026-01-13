@@ -128,7 +128,7 @@ export function PinProtection({ children, onAuthenticated }) {
   const keypadNumbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'delete'];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden overflow-y-auto py-4 sm:py-6">
+    <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center overflow-y-auto pt-4 pb-6 sm:py-8">
       {/* Animated background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
         {/* Animated orbs - smaller on mobile */}
@@ -178,7 +178,7 @@ export function PinProtection({ children, onAuthenticated }) {
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-3 sm:mx-4"
+        className="relative z-10 w-full max-w-[340px] sm:max-w-md mx-3 sm:mx-4 my-auto"
       >
         {/* Glass card */}
         <motion.div
@@ -187,7 +187,7 @@ export function PinProtection({ children, onAuthenticated }) {
           className="bg-white/10 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-white/20 shadow-2xl overflow-hidden"
         >
           {/* Header */}
-          <div className="relative px-4 sm:px-8 pt-6 sm:pt-10 pb-4 sm:pb-6 text-center">
+          <div className="relative px-4 sm:px-8 pt-8 sm:pt-10 pb-4 sm:pb-6 text-center">
             {/* Success overlay */}
             <AnimatePresence>
               {success && (
@@ -220,7 +220,7 @@ export function PinProtection({ children, onAuthenticated }) {
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-              className="relative inline-block mb-4 sm:mb-6"
+              className="relative inline-block mt-2 mb-4 sm:mb-6"
             >
               <motion.div
                 animate={isLocked ? { rotate: [0, -3, 3, -3, 0] } : {}}
