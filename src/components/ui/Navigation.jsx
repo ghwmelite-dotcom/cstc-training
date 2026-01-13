@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Presentation, Home, Sun, Moon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Presentation, Home, Sun, Moon, LogOut } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 
 export function Navigation({
@@ -7,6 +7,7 @@ export function Navigation({
   onNext,
   onHome,
   onPresenter,
+  onLogout,
   canGoPrev,
   canGoNext,
   isPresenterOpen,
@@ -104,6 +105,17 @@ export function Navigation({
         >
           <Presentation size={18} />
         </NavButton>
+
+        <Divider isDark={isDark} />
+
+        <NavButton
+          onClick={onLogout}
+          title="Lock Presentation"
+          isDark={isDark}
+          danger
+        >
+          <LogOut size={18} />
+        </NavButton>
       </div>
 
       {/* Keyboard hint */}
@@ -121,7 +133,7 @@ export function Navigation({
   );
 }
 
-function NavButton({ children, onClick, disabled, title, active, highlight, isDark }) {
+function NavButton({ children, onClick, disabled, title, active, highlight, danger, isDark }) {
   return (
     <motion.button
       onClick={onClick}
@@ -131,6 +143,10 @@ function NavButton({ children, onClick, disabled, title, active, highlight, isDa
         relative p-2.5 rounded-full transition-all duration-200
         ${disabled
           ? 'opacity-30 cursor-not-allowed'
+          : danger
+          ? isDark
+            ? 'text-red-400/70 hover:text-red-400 hover:bg-red-500/20'
+            : 'text-red-400 hover:text-red-500 hover:bg-red-50'
           : active
           ? isDark
             ? 'bg-gradient-to-r from-cyan-500/30 to-purple-500/30 text-cyan-300'

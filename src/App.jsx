@@ -508,6 +508,10 @@ function App() {
         onNext={nextStep}
         onHome={() => goToSlide(0)}
         onPresenter={openPresenterView}
+        onLogout={() => {
+          sessionStorage.removeItem('cstc-authenticated');
+          window.location.reload();
+        }}
         canGoPrev={currentSlide > 0 || currentStep > 0}
         canGoNext={currentSlide < slidesConfig.length - 1 || currentStep < (currentSlideConfig?.steps || 1) - 1}
         isPresenterOpen={isPresenterOpen}
