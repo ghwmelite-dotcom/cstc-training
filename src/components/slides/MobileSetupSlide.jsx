@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { useState } from 'react';
+import { jsPDF } from 'jspdf';
 
 // Mobile setup data for all three tools
 export const mobileSetupGuides = {
@@ -90,64 +91,329 @@ export const mobileSetupGuides = {
   }
 };
 
-// Generate PDF content
-function generatePDFContent(tool) {
+// Color configurations for PDF
+const pdfColors = {
+  calendar: { r: 6, g: 182, b: 212 },    // cyan-500
+  trello: { r: 99, g: 102, b: 241 },     // indigo-500
+  asana: { r: 244, g: 63, b: 94 },       // rose-500
+  header: { r: 15, g: 23, b: 42 },       // slate-900
+  text: { r: 51, g: 65, b: 85 },         // slate-700
+  hint: { r: 100, g: 116, b: 139 },      // slate-500
+  accent: { r: 16, g: 185, b: 129 },     // emerald-500
+};
+
+// Generate PDF for a single tool
+function generatePDF(tool) {
   const guide = mobileSetupGuides[tool];
+  const color = pdfColors[tool];
+  const doc = new jsPDF();
 
-  const content = `
-${guide.title.toUpperCase()} - MOBILE SETUP GUIDE
-${'='.repeat(50)}
+  let y = 20;
+  const leftMargin = 20;
+  const pageWidth = doc.internal.pageSize.getWidth();
 
-FOR ANDROID
-${'-'.repeat(30)}
-${guide.android.map((s, i) => `${i + 1}. ${s.step}${s.hint ? `\n   → ${s.hint}` : ''}`).join('\n')}
+  // Header background
+  doc.setFillColor(color.r, color.g, color.b);
+  doc.rect(0, 0, pageWidth, 45, 'F');
 
-FOR iPHONE
-${'-'.repeat(30)}
-${guide.iphone.map((s, i) => `${i + 1}. ${s.step}${s.hint ? `\n   → ${s.hint}` : ''}`).join('\n')}
+  // Title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text(guide.title, leftMargin, 25);
 
-QUICK TIPS
-${'-'.repeat(30)}
-${guide.quickTips.map(t => `• ${t.action}: ${t.how}`).join('\n')}
+  // Subtitle
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Mobile Setup Guide', leftMargin, 35);
 
-${'='.repeat(50)}
-Civil Service Training Centre
-Productivity Tools Training
-  `.trim();
+  y = 60;
 
-  return content;
+  // CSTC Badge
+  doc.setFontSize(9);
+  doc.setTextColor(pdfColors.hint.r, pdfColors.hint.g, pdfColors.hint.b);
+  doc.text('Civil Service Training Centre', pageWidth - 20, 55, { align: 'right' });
+
+  // Android Section
+  doc.setFillColor(34, 197, 94); // green-500
+  doc.roundedRect(leftMargin, y, 8, 8, 2, 2, 'F');
+  doc.setTextColor(pdfColors.header.r, pdfColors.header.g, pdfColors.header.b);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('For Android', leftMargin + 12, y + 6);
+
+  y += 15;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+
+  guide.android.forEach((step, i) => {
+    doc.setTextColor(color.r, color.g, color.b);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${i + 1}.`, leftMargin, y);
+
+    doc.setTextColor(pdfColors.text.r, pdfColors.text.g, pdfColors.text.b);
+    doc.setFont('helvetica', 'normal');
+    doc.text(step.step, leftMargin + 8, y);
+
+    if (step.hint) {
+      y += 5;
+      doc.setTextColor(pdfColors.hint.r, pdfColors.hint.g, pdfColors.hint.b);
+      doc.setFontSize(9);
+      doc.text(`→ ${step.hint}`, leftMargin + 8, y);
+      doc.setFontSize(11);
+    }
+    y += 8;
+  });
+
+  y += 10;
+
+  // iPhone Section
+  doc.setFillColor(51, 51, 51); // dark gray for Apple
+  doc.roundedRect(leftMargin, y, 8, 8, 2, 2, 'F');
+  doc.setTextColor(pdfColors.header.r, pdfColors.header.g, pdfColors.header.b);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('For iPhone', leftMargin + 12, y + 6);
+
+  y += 15;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+
+  guide.iphone.forEach((step, i) => {
+    doc.setTextColor(color.r, color.g, color.b);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${i + 1}.`, leftMargin, y);
+
+    doc.setTextColor(pdfColors.text.r, pdfColors.text.g, pdfColors.text.b);
+    doc.setFont('helvetica', 'normal');
+    doc.text(step.step, leftMargin + 8, y);
+
+    if (step.hint) {
+      y += 5;
+      doc.setTextColor(pdfColors.hint.r, pdfColors.hint.g, pdfColors.hint.b);
+      doc.setFontSize(9);
+      doc.text(`→ ${step.hint}`, leftMargin + 8, y);
+      doc.setFontSize(11);
+    }
+    y += 8;
+  });
+
+  y += 10;
+
+  // Quick Tips Section
+  doc.setFillColor(pdfColors.accent.r, pdfColors.accent.g, pdfColors.accent.b);
+  doc.roundedRect(leftMargin, y, pageWidth - 40, 45, 3, 3, 'F');
+
+  y += 10;
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Quick Tips', leftMargin + 8, y);
+
+  y += 8;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+
+  guide.quickTips.forEach((tip) => {
+    doc.text(`•  ${tip.action}: ${tip.how}`, leftMargin + 8, y);
+    y += 6;
+  });
+
+  // Footer
+  const footerY = doc.internal.pageSize.getHeight() - 15;
+  doc.setDrawColor(color.r, color.g, color.b);
+  doc.setLineWidth(0.5);
+  doc.line(leftMargin, footerY - 5, pageWidth - leftMargin, footerY - 5);
+
+  doc.setTextColor(pdfColors.hint.r, pdfColors.hint.g, pdfColors.hint.b);
+  doc.setFontSize(8);
+  doc.text('CSTC Productivity Tools Training', leftMargin, footerY);
+  doc.text('January 2026', pageWidth - leftMargin, footerY, { align: 'right' });
+
+  return doc;
 }
 
-// Download handler
+// Download handler for single guide
 function downloadGuide(tool) {
   const guide = mobileSetupGuides[tool];
-  const content = generatePDFContent(tool);
-
-  // Create blob and download
-  const blob = new Blob([content], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${guide.title.replace(/\s+/g, '-')}-Mobile-Setup-Guide.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const doc = generatePDF(tool);
+  doc.save(`${guide.title.replace(/\s+/g, '-')}-Mobile-Setup-Guide.pdf`);
 }
 
-// Download all guides as one file
+// Download all guides as one PDF file
 export function downloadAllGuides() {
-  const allContent = Object.keys(mobileSetupGuides).map(tool => generatePDFContent(tool)).join('\n\n\n');
+  const doc = new jsPDF();
+  const tools = Object.keys(mobileSetupGuides);
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
 
-  const blob = new Blob([allContent], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'CSTC-Productivity-Tools-Mobile-Setup-Guides.txt';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  // Cover page
+  doc.setFillColor(15, 23, 42); // slate-900
+  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+
+  // Decorative circles
+  doc.setFillColor(6, 182, 212, 0.3); // cyan with opacity
+  doc.circle(30, 50, 40, 'F');
+  doc.setFillColor(99, 102, 241, 0.3); // indigo with opacity
+  doc.circle(pageWidth - 30, 100, 35, 'F');
+  doc.setFillColor(244, 63, 94, 0.3); // rose with opacity
+  doc.circle(50, pageHeight - 60, 30, 'F');
+
+  // Title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(28);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Mobile Setup Guides', pageWidth / 2, 100, { align: 'center' });
+
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(148, 163, 184); // slate-400
+  doc.text('Productivity Tools Training', pageWidth / 2, 115, { align: 'center' });
+
+  // Tool list
+  let y = 150;
+  const toolNames = ['Google Calendar', 'Trello', 'Asana'];
+  const colors = [pdfColors.calendar, pdfColors.trello, pdfColors.asana];
+
+  toolNames.forEach((name, i) => {
+    doc.setFillColor(colors[i].r, colors[i].g, colors[i].b);
+    doc.roundedRect(pageWidth / 2 - 50, y - 5, 100, 14, 3, 3, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.text(name, pageWidth / 2, y + 4, { align: 'center' });
+    y += 22;
+  });
+
+  // Footer on cover
+  doc.setTextColor(100, 116, 139);
+  doc.setFontSize(10);
+  doc.text('Civil Service Training Centre', pageWidth / 2, pageHeight - 30, { align: 'center' });
+  doc.text('January 2026', pageWidth / 2, pageHeight - 22, { align: 'center' });
+
+  // Add individual guide pages
+  tools.forEach((tool) => {
+    doc.addPage();
+    const guide = mobileSetupGuides[tool];
+    const color = pdfColors[tool];
+
+    let y = 20;
+    const leftMargin = 20;
+
+    // Header background
+    doc.setFillColor(color.r, color.g, color.b);
+    doc.rect(0, 0, pageWidth, 45, 'F');
+
+    // Title
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text(guide.title, leftMargin, 25);
+
+    // Subtitle
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Mobile Setup Guide', leftMargin, 35);
+
+    y = 60;
+
+    // Android Section
+    doc.setFillColor(34, 197, 94);
+    doc.roundedRect(leftMargin, y, 8, 8, 2, 2, 'F');
+    doc.setTextColor(pdfColors.header.r, pdfColors.header.g, pdfColors.header.b);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('For Android', leftMargin + 12, y + 6);
+
+    y += 15;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+
+    guide.android.forEach((step, i) => {
+      doc.setTextColor(color.r, color.g, color.b);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${i + 1}.`, leftMargin, y);
+
+      doc.setTextColor(pdfColors.text.r, pdfColors.text.g, pdfColors.text.b);
+      doc.setFont('helvetica', 'normal');
+      doc.text(step.step, leftMargin + 8, y);
+
+      if (step.hint) {
+        y += 5;
+        doc.setTextColor(pdfColors.hint.r, pdfColors.hint.g, pdfColors.hint.b);
+        doc.setFontSize(9);
+        doc.text(`→ ${step.hint}`, leftMargin + 8, y);
+        doc.setFontSize(11);
+      }
+      y += 8;
+    });
+
+    y += 10;
+
+    // iPhone Section
+    doc.setFillColor(51, 51, 51);
+    doc.roundedRect(leftMargin, y, 8, 8, 2, 2, 'F');
+    doc.setTextColor(pdfColors.header.r, pdfColors.header.g, pdfColors.header.b);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('For iPhone', leftMargin + 12, y + 6);
+
+    y += 15;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+
+    guide.iphone.forEach((step, i) => {
+      doc.setTextColor(color.r, color.g, color.b);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${i + 1}.`, leftMargin, y);
+
+      doc.setTextColor(pdfColors.text.r, pdfColors.text.g, pdfColors.text.b);
+      doc.setFont('helvetica', 'normal');
+      doc.text(step.step, leftMargin + 8, y);
+
+      if (step.hint) {
+        y += 5;
+        doc.setTextColor(pdfColors.hint.r, pdfColors.hint.g, pdfColors.hint.b);
+        doc.setFontSize(9);
+        doc.text(`→ ${step.hint}`, leftMargin + 8, y);
+        doc.setFontSize(11);
+      }
+      y += 8;
+    });
+
+    y += 10;
+
+    // Quick Tips Section
+    doc.setFillColor(pdfColors.accent.r, pdfColors.accent.g, pdfColors.accent.b);
+    doc.roundedRect(leftMargin, y, pageWidth - 40, 45, 3, 3, 'F');
+
+    y += 10;
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Quick Tips', leftMargin + 8, y);
+
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+
+    guide.quickTips.forEach((tip) => {
+      doc.text(`•  ${tip.action}: ${tip.how}`, leftMargin + 8, y);
+      y += 6;
+    });
+
+    // Footer
+    const footerY = pageHeight - 15;
+    doc.setDrawColor(color.r, color.g, color.b);
+    doc.setLineWidth(0.5);
+    doc.line(leftMargin, footerY - 5, pageWidth - leftMargin, footerY - 5);
+
+    doc.setTextColor(pdfColors.hint.r, pdfColors.hint.g, pdfColors.hint.b);
+    doc.setFontSize(8);
+    doc.text('CSTC Productivity Tools Training', leftMargin, footerY);
+    doc.text('January 2026', pageWidth - leftMargin, footerY, { align: 'right' });
+  });
+
+  doc.save('CSTC-Mobile-Setup-Guides-Complete.pdf');
 }
 
 // Phone mockup component
