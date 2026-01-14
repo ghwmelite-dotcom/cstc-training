@@ -17,10 +17,14 @@ import {
   GraduationCap,
   Play,
   RotateCcw,
+  Mail,
+  FileText,
 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 import { CalendarPractice } from './CalendarPractice';
 import { TrelloPractice } from './TrelloPractice';
+import { GmailPractice } from './GmailPractice';
+import { DocsPractice } from './DocsPractice';
 
 // Floating particles component
 function FloatingParticles({ count = 20, isDark }) {
@@ -80,6 +84,8 @@ function ToolCard({ tool, isSelected, onClick, progress, isDark }) {
   const icons = {
     calendar: Calendar,
     trello: Trello,
+    gmail: Mail,
+    docs: FileText,
   };
   const Icon = icons[tool.id];
 
@@ -284,6 +290,8 @@ export function PracticePlatform() {
   const [practiceProgress, setPracticeProgress] = useState({
     calendar: { completed: 0, total: 5, challenges: [] },
     trello: { completed: 0, total: 5, challenges: [] },
+    gmail: { completed: 0, total: 5, challenges: [] },
+    docs: { completed: 0, total: 5, challenges: [] },
   });
   const [stats, setStats] = useState({
     totalPoints: 0,
@@ -295,9 +303,11 @@ export function PracticePlatform() {
     { id: 1, name: 'First Steps', description: 'Complete your first challenge', icon: Star, unlocked: false },
     { id: 2, name: 'Calendar Pro', description: 'Master all calendar challenges', icon: Calendar, unlocked: false },
     { id: 3, name: 'Trello Master', description: 'Master all Trello challenges', icon: Trello, unlocked: false },
-    { id: 4, name: 'Speed Demon', description: 'Complete a challenge in under 30s', icon: Zap, unlocked: false },
-    { id: 5, name: 'Perfect Score', description: 'Get 100% on any challenge', icon: Target, unlocked: false },
-    { id: 6, name: 'On Fire', description: 'Complete 3 challenges in a row', icon: Flame, unlocked: false },
+    { id: 4, name: 'Gmail Guru', description: 'Master all Gmail challenges', icon: Mail, unlocked: false },
+    { id: 5, name: 'Docs Expert', description: 'Master all Docs challenges', icon: FileText, unlocked: false },
+    { id: 6, name: 'Speed Demon', description: 'Complete a challenge in under 30s', icon: Zap, unlocked: false },
+    { id: 7, name: 'Perfect Score', description: 'Get 100% on any challenge', icon: Target, unlocked: false },
+    { id: 8, name: 'On Fire', description: 'Complete 3 challenges in a row', icon: Flame, unlocked: false },
   ]);
 
   const tools = [
@@ -312,6 +322,18 @@ export function PracticePlatform() {
       name: 'Trello',
       description: 'Learn board management, card workflows, and team collaboration',
       gradient: 'from-indigo-500 to-purple-500',
+    },
+    {
+      id: 'gmail',
+      name: 'Gmail',
+      description: 'Master email composition, organization, and inbox management',
+      gradient: 'from-red-500 to-orange-500',
+    },
+    {
+      id: 'docs',
+      name: 'Google Docs',
+      description: 'Learn document creation, formatting, and collaboration',
+      gradient: 'from-green-500 to-emerald-500',
     },
   ];
 
@@ -596,6 +618,22 @@ export function PracticePlatform() {
                     handleChallengeComplete('trello', challengeId, score, time)
                   }
                   progress={practiceProgress.trello}
+                />
+              )}
+              {selectedTool === 'gmail' && (
+                <GmailPractice
+                  onComplete={(challengeId, score, time) =>
+                    handleChallengeComplete('gmail', challengeId, score, time)
+                  }
+                  progress={practiceProgress.gmail}
+                />
+              )}
+              {selectedTool === 'docs' && (
+                <DocsPractice
+                  onComplete={(challengeId, score, time) =>
+                    handleChallengeComplete('docs', challengeId, score, time)
+                  }
+                  progress={practiceProgress.docs}
                 />
               )}
             </motion.div>

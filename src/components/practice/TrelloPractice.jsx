@@ -100,6 +100,16 @@ function CardModal({ isOpen, onClose, card, onSave, onDelete, isDark }) {
   const [dueDate, setDueDate] = useState(card?.dueDate || '');
   const [checklist, setChecklist] = useState(card?.checklist || []);
   const [newCheckItem, setNewCheckItem] = useState('');
+  const [canClose, setCanClose] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent immediate close from click event bubbling
+      setCanClose(false);
+      const timer = setTimeout(() => setCanClose(true), 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (card) {
@@ -145,6 +155,13 @@ function CardModal({ isOpen, onClose, card, onSave, onDelete, isDark }) {
     onClose();
   };
 
+  const handleBackdropClick = (e) => {
+    e.stopPropagation();
+    if (canClose) {
+      onClose();
+    }
+  };
+
   const handleClose = (e) => {
     if (e) e.stopPropagation();
     onClose();
@@ -159,7 +176,7 @@ function CardModal({ isOpen, onClose, card, onSave, onDelete, isDark }) {
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
           style={{ zIndex: 99999 }}
-          onClick={handleClose}
+          onClick={handleBackdropClick}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -385,12 +402,21 @@ function CardModal({ isOpen, onClose, card, onSave, onDelete, isDark }) {
 
 // Single Trello card component
 function TrelloCard({ card, listId, onEdit, onDragStart, onDragEnd, isDragging, isDark }) {
+  const handleCardClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    // Use requestAnimationFrame to ensure click event is fully processed
+    requestAnimationFrame(() => {
+      onEdit(card);
+    });
+  };
+
   return (
     <motion.div
       draggable
       onDragStart={(e) => onDragStart(e, card, listId)}
       onDragEnd={onDragEnd}
-      onClick={() => onEdit(card)}
+      onClick={handleCardClick}
       className={`p-3 rounded-xl border cursor-grab active:cursor-grabbing transition-all group ${
         isDragging
           ? 'opacity-50 scale-95 ring-2 ring-indigo-400'
@@ -565,6 +591,8 @@ export function TrelloPractice({ onComplete, progress }) {
   const [draggedCard, setDraggedCard] = useState(null);
   const [draggedFromList, setDraggedFromList] = useState(null);
   const [dropTargetList, setDropTargetList] = useState(null);
+  const [editingListId, setEditingListId] = useState(null);
+  const [editingListTitle, setEditingListTitle] = useState('');
   const startTimeRef = useRef(null);
   const isCheckingRef = useRef(false);
   const successTimeoutRef = useRef(null);
@@ -628,6 +656,34 @@ export function TrelloPractice({ onComplete, progress }) {
     setDropTargetList(null);
   };
 
+  // Start editing list title
+  const handleStartEditListTitle = (e, list) => {
+    e.stopPropagation();
+    setEditingListId(list.id);
+    setEditingListTitle(list.title);
+  };
+
+  // Save list title
+  const handleSaveListTitle = (listId) => {
+    if (editingListTitle.trim()) {
+      setLists(prev =>
+        prev.map(list =>
+          list.id === listId
+            ? { ...list, title: editingListTitle.trim() }
+            : list
+        )
+      );
+    }
+    setEditingListId(null);
+    setEditingListTitle('');
+  };
+
+  // Cancel editing list title
+  const handleCancelEditListTitle = () => {
+    setEditingListId(null);
+    setEditingListTitle('');
+  };
+
   // Add new card
   const handleAddCard = (listId) => {
     if (!newCardTitle.trim()) return;
@@ -675,57 +731,82 @@ export function TrelloPractice({ onComplete, progress }) {
     );
   };
 
-  // Check challenge completion
-  useEffect(() => {
-    // Skip if no active challenge, showing success, or already checking
-    if (!activeChallenge || showSuccess || isCheckingRef.current) return;
+  // Queue for pending challenge completions
+  const [completionQueue, setCompletionQueue] = useState([]);
 
-    // Skip if already completed
-    if (completedChallenges.includes(activeChallenge.id)) return;
+  // Handle showing next challenge completion
+  const showNextCompletion = useCallback(() => {
+    setCompletionQueue(prev => {
+      if (prev.length === 0) return prev;
 
-    // Run validation
-    try {
-      const isComplete = activeChallenge.validation(lists, actions);
-      console.log(`Checking Trello challenge ${activeChallenge.id}:`, isComplete);
+      const [next, ...rest] = prev;
+      setSuccessChallenge(next);
+      setShowSuccess(true);
 
-      if (isComplete) {
-        isCheckingRef.current = true;
-        const timeSpent = startTimeRef.current ? (Date.now() - startTimeRef.current) / 1000 : 0;
+      // Notify parent
+      onComplete?.(next.id, next.points, 0);
 
-        console.log(`Trello challenge ${activeChallenge.id} completed! Points: ${activeChallenge.points}`);
+      // Schedule hiding and showing next
+      successTimeoutRef.current = setTimeout(() => {
+        setShowSuccess(false);
+        setSuccessChallenge(null);
 
-        setCompletedChallenges(prev => [...prev, activeChallenge.id]);
-        setSuccessChallenge(activeChallenge);
-        setShowSuccess(true);
-
-        onComplete?.(activeChallenge.id, activeChallenge.points, timeSpent);
-
-        // Clear previous timeout if exists
-        if (successTimeoutRef.current) {
-          clearTimeout(successTimeoutRef.current);
+        // If more in queue, show next after a small delay
+        if (rest.length > 0) {
+          setTimeout(() => showNextCompletion(), 300);
         }
+      }, 2000);
 
-        successTimeoutRef.current = setTimeout(() => {
-          setActiveChallenge(null);
-          setShowSuccess(false);
-          setSuccessChallenge(null);
-          isCheckingRef.current = false;
-          successTimeoutRef.current = null;
-        }, 2500);
+      return rest;
+    });
+  }, [onComplete]);
+
+  // Check ALL challenges when lists/actions change - auto-validate without needing to "start"
+  useEffect(() => {
+    const hasCards = lists.some(l => l.cards.length > 0);
+    if (!hasCards && actions.length === 0) return;
+    if (showSuccess) return;
+
+    // Find all newly completed challenges
+    const newlyCompleted = challenges.filter(challenge => {
+      // Skip if already completed
+      if (completedChallenges.includes(challenge.id)) return false;
+
+      // Check if validation passes
+      try {
+        const isComplete = challenge.validation(lists, actions);
+        console.log(`Auto-checking Trello challenge ${challenge.id} (${challenge.title}):`, isComplete);
+        return isComplete;
+      } catch (err) {
+        console.error(`Validation error for Trello challenge ${challenge.id}:`, err);
+        return false;
       }
-    } catch (err) {
-      console.error('Trello validation error:', err);
-    }
-  }, [lists, actions, activeChallenge, showSuccess, completedChallenges, onComplete]);
+    });
 
-  // Start challenge
-  const handleStartChallenge = (challenge) => {
-    console.log('Starting Trello challenge:', challenge.id, challenge.title);
-    isCheckingRef.current = false;
+    if (newlyCompleted.length > 0) {
+      console.log('Newly completed Trello challenges:', newlyCompleted.map(c => c.title));
+
+      // Mark all as completed
+      setCompletedChallenges(prev => [...prev, ...newlyCompleted.map(c => c.id)]);
+
+      // Queue up the celebrations
+      setCompletionQueue(prev => [...prev, ...newlyCompleted]);
+    }
+  }, [lists, actions, completedChallenges, showSuccess]);
+
+  // Process completion queue
+  useEffect(() => {
+    if (completionQueue.length > 0 && !showSuccess) {
+      showNextCompletion();
+    }
+  }, [completionQueue, showSuccess, showNextCompletion]);
+
+  // Start challenge - now just highlights which one to focus on
+  const handleStartChallenge = useCallback((challenge) => {
+    console.log('Focusing on Trello challenge:', challenge.id, challenge.title);
     setActiveChallenge(challenge);
-    startTimeRef.current = Date.now();
     setShowHint(false);
-  };
+  }, []);
 
   // Reset
   const handleReset = () => {
@@ -739,6 +820,7 @@ export function TrelloPractice({ onComplete, progress }) {
     setActions([]);
     setActiveChallenge(null);
     setCompletedChallenges([]);
+    setCompletionQueue([]);
     setShowSuccess(false);
     setSuccessChallenge(null);
     isCheckingRef.current = false;
@@ -821,19 +903,49 @@ export function TrelloPractice({ onComplete, progress }) {
               >
                 {/* List header */}
                 <div className="flex items-center justify-between px-2 py-2 mb-3">
-                  <h4 className={`font-bold text-sm flex items-center gap-2 ${
-                    isDark ? 'text-white' : 'text-slate-700'
-                  }`}>
-                    {list.title}
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      isDark ? 'bg-white/10 text-white/60' : 'bg-slate-200 text-slate-500'
-                    }`}>
-                      {list.cards.length}
-                    </span>
-                  </h4>
-                  <button className={`p-1 rounded hover:bg-white/10 ${
-                    isDark ? 'text-white/40' : 'text-slate-400'
-                  }`}>
+                  {editingListId === list.id ? (
+                    <div className="flex items-center gap-2 flex-1">
+                      <input
+                        type="text"
+                        value={editingListTitle}
+                        onChange={(e) => setEditingListTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveListTitle(list.id);
+                          if (e.key === 'Escape') handleCancelEditListTitle();
+                        }}
+                        onBlur={() => handleSaveListTitle(list.id)}
+                        className={`font-bold text-sm px-2 py-1 rounded-lg flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                          isDark
+                            ? 'bg-slate-700 text-white'
+                            : 'bg-white text-slate-700'
+                        }`}
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  ) : (
+                    <h4
+                      onClick={(e) => handleStartEditListTitle(e, list)}
+                      className={`font-bold text-sm flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ${
+                        isDark ? 'text-white' : 'text-slate-700'
+                      }`}
+                      title="Click to edit"
+                    >
+                      {list.title}
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        isDark ? 'bg-white/10 text-white/60' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        {list.cards.length}
+                      </span>
+                    </h4>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => e.stopPropagation()}
+                    className={`p-1 rounded hover:bg-white/10 ${
+                      isDark ? 'text-white/40' : 'text-slate-400'
+                    }`}
+                  >
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
                 </div>

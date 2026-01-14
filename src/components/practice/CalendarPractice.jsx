@@ -97,6 +97,7 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
   const [attendees, setAttendees] = useState('');
   const [reminder, setReminder] = useState(false);
   const [hasVideo, setHasVideo] = useState(false);
+  const [canClose, setCanClose] = useState(false);
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -109,6 +110,10 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
       setAttendees('');
       setReminder(false);
       setHasVideo(false);
+      // Prevent immediate close from click event bubbling
+      setCanClose(false);
+      const timer = setTimeout(() => setCanClose(true), 100);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
@@ -123,12 +128,20 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
       duration,
       color,
       location: location.trim(),
-      attendees: attendees.split(',').map(a => a.trim()).filter(Boolean),
+      attendees: attendees.split(/[,\n\s]+/).map(a => a.trim()).filter(a => a && a.includes('@')),
       reminder,
       hasVideo,
     });
 
     onClose();
+  };
+
+  const handleBackdropClick = (e) => {
+    e.stopPropagation();
+    // Only close if enough time has passed since opening
+    if (canClose) {
+      onClose();
+    }
   };
 
   const handleClose = (e) => {
@@ -146,7 +159,7 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
           style={{ zIndex: 99999 }}
-          onClick={handleClose}
+          onClick={handleBackdropClick}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -286,17 +299,22 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
               <label className={`block text-sm font-medium mb-1.5 ${isDark ? 'text-white/80' : 'text-slate-700'}`}>
                 <Users className="w-4 h-4 inline mr-1" /> Attendees
               </label>
-              <input
-                type="text"
+              <textarea
                 value={attendees}
                 onChange={(e) => setAttendees(e.target.value)}
-                placeholder="e.g., john@email.com, jane@email.com"
-                className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all ${
+                placeholder="Enter email addresses separated by commas&#10;e.g., john@email.com, jane@email.com"
+                rows={2}
+                className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all resize-none ${
                   isDark
                     ? 'bg-slate-700 border-slate-600 text-white placeholder:text-white/40'
                     : 'bg-slate-50 border-slate-200 text-slate-800 placeholder:text-slate-400'
                 }`}
               />
+              {attendees && (
+                <p className={`text-xs mt-1 ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
+                  {attendees.split(/[,\n\s]+/).filter(a => a.trim() && a.includes('@')).length} attendee(s) added
+                </p>
+              )}
             </div>
 
             {/* Options */}
@@ -486,9 +504,14 @@ export function CalendarPractice({ onComplete, progress }) {
   }, []);
 
   // Handle slot click
-  const handleSlotClick = (day, hour) => {
+  const handleSlotClick = (e, day, hour) => {
+    e.stopPropagation();
+    e.preventDefault();
     setSelectedSlot({ day, hour });
-    setShowModal(true);
+    // Small delay to prevent click from reaching modal backdrop
+    requestAnimationFrame(() => {
+      setShowModal(true);
+    });
   };
 
   // Handle event save
@@ -501,68 +524,78 @@ export function CalendarPractice({ onComplete, progress }) {
     });
   }, []);
 
-  // Handle challenge completion
-  const handleChallengeComplete = useCallback((challenge) => {
-    if (isCheckingRef.current) return;
-    isCheckingRef.current = true;
+  // Queue for pending challenge completions
+  const [completionQueue, setCompletionQueue] = useState([]);
 
-    const timeSpent = startTimeRef.current ? (Date.now() - startTimeRef.current) / 1000 : 0;
+  // Handle showing next challenge completion
+  const showNextCompletion = useCallback(() => {
+    setCompletionQueue(prev => {
+      if (prev.length === 0) return prev;
 
-    console.log(`Challenge ${challenge.id} completed! Points: ${challenge.points}`);
+      const [next, ...rest] = prev;
+      setSuccessChallenge(next);
+      setShowSuccess(true);
 
-    setCompletedChallenges(prev => [...prev, challenge.id]);
-    setSuccessChallenge(challenge);
-    setShowSuccess(true);
+      // Notify parent
+      onComplete?.(next.id, next.points, 0);
 
-    // Notify parent
-    onComplete?.(challenge.id, challenge.points, timeSpent);
+      // Schedule hiding and showing next
+      successTimeoutRef.current = setTimeout(() => {
+        setShowSuccess(false);
+        setSuccessChallenge(null);
 
-    // Clear previous timeout if exists
-    if (successTimeoutRef.current) {
-      clearTimeout(successTimeoutRef.current);
-    }
+        // If more in queue, show next after a small delay
+        if (rest.length > 0) {
+          setTimeout(() => showNextCompletion(), 300);
+        }
+      }, 2000);
 
-    // Clear after delay
-    successTimeoutRef.current = setTimeout(() => {
-      setActiveChallenge(null);
-      setShowSuccess(false);
-      setSuccessChallenge(null);
-      isCheckingRef.current = false;
-      successTimeoutRef.current = null;
-    }, 2500);
+      return rest;
+    });
   }, [onComplete]);
 
-  // Check challenge completion when events change
+  // Check ALL challenges when events change - auto-validate without needing to "start"
   useEffect(() => {
-    // Skip if no active challenge, showing success, or already checking
-    if (!activeChallenge || showSuccess || isCheckingRef.current) return;
+    if (events.length === 0 || showSuccess) return;
 
-    // Skip if already completed
-    if (completedChallenges.includes(activeChallenge.id)) return;
+    // Find all newly completed challenges
+    const newlyCompleted = challenges.filter(challenge => {
+      // Skip if already completed
+      if (completedChallenges.includes(challenge.id)) return false;
 
-    // Run validation
-    try {
-      const isComplete = activeChallenge.validation(events);
-      console.log(`Checking challenge ${activeChallenge.id}:`, isComplete, 'Events:', events.length);
-
-      if (isComplete) {
-        handleChallengeComplete(activeChallenge);
+      // Check if validation passes
+      try {
+        const isComplete = challenge.validation(events);
+        console.log(`Auto-checking challenge ${challenge.id} (${challenge.title}):`, isComplete);
+        return isComplete;
+      } catch (err) {
+        console.error(`Validation error for challenge ${challenge.id}:`, err);
+        return false;
       }
-    } catch (err) {
-      console.error('Validation error:', err);
+    });
+
+    if (newlyCompleted.length > 0) {
+      console.log('Newly completed challenges:', newlyCompleted.map(c => c.title));
+
+      // Mark all as completed
+      setCompletedChallenges(prev => [...prev, ...newlyCompleted.map(c => c.id)]);
+
+      // Queue up the celebrations
+      setCompletionQueue(prev => [...prev, ...newlyCompleted]);
     }
-  }, [events, activeChallenge, showSuccess, completedChallenges, handleChallengeComplete]);
+  }, [events, completedChallenges, showSuccess]);
 
-  // Start challenge
+  // Process completion queue
+  useEffect(() => {
+    if (completionQueue.length > 0 && !showSuccess) {
+      showNextCompletion();
+    }
+  }, [completionQueue, showSuccess, showNextCompletion]);
+
+  // Start challenge - now just highlights which one to focus on
   const handleStartChallenge = useCallback((challenge) => {
-    console.log('Starting challenge:', challenge.id, challenge.title);
-
-    // Reset checking flag
-    isCheckingRef.current = false;
-
-    // Set challenge state
+    console.log('Focusing on challenge:', challenge.id, challenge.title);
     setActiveChallenge(challenge);
-    startTimeRef.current = Date.now();
     setShowHint(false);
   }, []);
 
@@ -578,6 +611,7 @@ export function CalendarPractice({ onComplete, progress }) {
     setEvents([]);
     setActiveChallenge(null);
     setCompletedChallenges([]);
+    setCompletionQueue([]);
     setShowSuccess(false);
     setSuccessChallenge(null);
     isCheckingRef.current = false;
@@ -706,7 +740,7 @@ export function CalendarPractice({ onComplete, progress }) {
                       {hours.map((hour) => (
                         <motion.div
                           key={hour}
-                          onClick={() => handleSlotClick(dayIndex + 1, hour)}
+                          onClick={(e) => handleSlotClick(e, dayIndex + 1, hour)}
                           className={`h-12 border-b border-r cursor-pointer transition-colors ${
                             isDark
                               ? 'border-white/5 hover:bg-cyan-500/10'
@@ -724,6 +758,12 @@ export function CalendarPractice({ onComplete, progress }) {
                             key={event.id}
                             initial={{ opacity: 0, scale: 0.8, x: -10 }}
                             animate={{ opacity: 1, scale: 1, x: 0 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              // For now, just show event info - could add edit modal later
+                              console.log('Event clicked:', event);
+                            }}
                             className={`absolute left-1 right-1 bg-gradient-to-r ${getColorGradient(event.color)} rounded-lg px-2 py-1 text-white text-xs overflow-hidden cursor-pointer shadow-lg group`}
                             style={{
                               top: `${(event.start - 8) * 48 + 4}px`,
