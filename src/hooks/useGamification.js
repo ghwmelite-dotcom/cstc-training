@@ -76,21 +76,44 @@ const ACHIEVEMENTS = [
 ];
 
 export function useGamification(totalSlides, totalExercises = 3) {
-  const [state, setState] = useState({
-    points: 0,
-    slidesViewed: 0,
-    maxSlideReached: 0,
-    progress: 0,
-    quizScore: { correct: 0, total: 0 },
-    exercisesCompleted: 0,
-    scenariosCompleted: 0,
-    totalExercises,
-    fullyEngaged: false,
-    unlockedAchievements: [],
-    newAchievements: [],
-    participantName: '',
-    completedAt: null,
+  const [state, setState] = useState(() => {
+    // Load trainee name from session storage on init
+    const savedName = typeof window !== 'undefined'
+      ? sessionStorage.getItem('cstc-trainee-name') || ''
+      : '';
+
+    return {
+      points: 0,
+      slidesViewed: 0,
+      maxSlideReached: 0,
+      progress: 0,
+      quizScore: { correct: 0, total: 0 },
+      exercisesCompleted: 0,
+      scenariosCompleted: 0,
+      totalExercises,
+      fullyEngaged: false,
+      unlockedAchievements: [],
+      newAchievements: [],
+      participantName: savedName,
+      completedAt: null,
+    };
   });
+
+  // Sync trainee name when it changes in session storage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const name = sessionStorage.getItem('cstc-trainee-name');
+      if (name && name !== state.participantName) {
+        setState(prev => ({ ...prev, participantName: name }));
+      }
+    };
+
+    // Check on mount in case auth happened after initial load
+    handleStorageChange();
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const checkAchievements = useCallback((currentState) => {
     const newlyUnlocked = [];

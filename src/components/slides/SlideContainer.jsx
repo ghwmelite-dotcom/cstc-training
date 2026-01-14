@@ -63,7 +63,7 @@ export function SlideWrapper({ children, className = '', variant = 'default' }) 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={`
-        rounded-3xl p-8 md:p-12 min-h-[500px]
+        rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 lg:p-12 min-h-[350px] sm:min-h-[400px] md:min-h-[500px]
         ${variants[variant]}
         ${className}
       `}

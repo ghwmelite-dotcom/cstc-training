@@ -513,27 +513,27 @@ export function MobileSetupSlide({ tool }) {
   const steps = platform === 'android' ? guide.android : guide.iphone;
 
   return (
-    <div className={`min-h-[500px] rounded-3xl p-8 ${
+    <div className={`min-h-[350px] sm:min-h-[400px] md:min-h-[500px] rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 ${
       isDark ? 'bg-slate-800/50' : 'bg-white'
     }`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-6 md:mb-8">
+        <div className="flex items-center gap-3 sm:gap-4">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${guide.gradient} flex items-center justify-center shadow-lg`}
+            className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${guide.gradient} flex items-center justify-center shadow-lg flex-shrink-0`}
           >
-            <Icon className="w-7 h-7 text-white" />
+            <Icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
           </motion.div>
-          <div>
-            <div className="flex items-center gap-2">
-              <Smartphone className={`w-5 h-5 ${isDark ? 'text-white/60' : 'text-slate-500'}`} />
-              <span className={`text-sm font-medium uppercase tracking-wide ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Smartphone className={`w-4 h-4 sm:w-5 sm:h-5 ${isDark ? 'text-white/60' : 'text-slate-500'}`} />
+              <span className={`text-xs sm:text-sm font-medium uppercase tracking-wide ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
                 Mobile Setup Guide
               </span>
             </div>
-            <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>
+            <h2 className={`text-lg sm:text-xl md:text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>
               {guide.title} on Your Phone
             </h2>
           </div>
@@ -544,57 +544,58 @@ export function MobileSetupSlide({ tool }) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => downloadGuide(tool)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-medium transition-all text-sm sm:text-base self-start sm:self-auto ${
             isDark
               ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
               : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
           }`}
         >
-          <Download size={18} />
-          <span>Download Guide</span>
+          <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <span className="hidden sm:inline">Download Guide</span>
+          <span className="sm:hidden">Download</span>
         </motion.button>
       </div>
 
       {/* Platform toggle */}
-      <div className="flex justify-center mb-8">
-        <div className={`inline-flex rounded-xl p-1 ${isDark ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
+      <div className="flex justify-center mb-4 sm:mb-6 md:mb-8">
+        <div className={`inline-flex rounded-lg sm:rounded-xl p-1 ${isDark ? 'bg-slate-700/50' : 'bg-slate-100'}`}>
           <button
             onClick={() => setPlatform('android')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-md sm:rounded-lg font-medium transition-all text-sm sm:text-base ${
               platform === 'android'
                 ? 'bg-green-500 text-white shadow-lg'
                 : isDark ? 'text-white/60 hover:text-white' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <PlayCircle size={18} />
+            <PlayCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
             Android
           </button>
           <button
             onClick={() => setPlatform('iphone')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-md sm:rounded-lg font-medium transition-all text-sm sm:text-base ${
               platform === 'iphone'
                 ? 'bg-slate-800 text-white shadow-lg'
                 : isDark ? 'text-white/60 hover:text-white' : 'text-slate-500 hover:text-slate-700'
             }`}
           >
-            <Apple size={18} />
+            <Apple size={16} className="sm:w-[18px] sm:h-[18px]" />
             iPhone
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="grid md:grid-cols-2 gap-8 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 items-start">
         {/* Steps */}
         <motion.div
           key={platform}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className={`rounded-2xl p-6 ${isDark ? 'bg-slate-700/30' : 'bg-slate-50'}`}
+          className={`rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 ${isDark ? 'bg-slate-700/30' : 'bg-slate-50'}`}
         >
-          <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-            <span className={`w-8 h-8 rounded-lg bg-gradient-to-br ${guide.gradient} flex items-center justify-center`}>
-              <FileText className="w-4 h-4 text-white" />
+          <h3 className={`text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
+            <span className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br ${guide.gradient} flex items-center justify-center flex-shrink-0`}>
+              <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
             </span>
             Setup Steps
           </h3>
@@ -606,32 +607,32 @@ export function MobileSetupSlide({ tool }) {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
-          className={`rounded-2xl p-6 ${isDark ? 'bg-slate-700/30' : 'bg-slate-50'}`}
+          className={`rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 ${isDark ? 'bg-slate-700/30' : 'bg-slate-50'}`}
         >
-          <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-            <span className={`w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center`}>
-              <Bell className="w-4 h-4 text-white" />
+          <h3 className={`text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
+            <span className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0`}>
+              <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
             </span>
             Quick Tips
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {guide.quickTips.map((tip, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.1 }}
-                className={`flex items-center gap-3 p-3 rounded-xl ${
+                className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg sm:rounded-xl ${
                   isDark ? 'bg-slate-600/30' : 'bg-white border border-slate-200'
                 }`}
               >
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${guide.gradient} flex items-center justify-center flex-shrink-0`}>
-                  {i === 0 && <Plus className="w-4 h-4 text-white" />}
-                  {i === 1 && <GripVertical className="w-4 h-4 text-white" />}
-                  {i === 2 && <Check className="w-4 h-4 text-white" />}
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br ${guide.gradient} flex items-center justify-center flex-shrink-0`}>
+                  {i === 0 && <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />}
+                  {i === 1 && <GripVertical className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />}
+                  {i === 2 && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                  <p className={`text-xs sm:text-sm font-medium ${isDark ? 'text-white' : 'text-slate-800'}`}>
                     {tip.action}
                   </p>
                   <p className={`text-xs ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
@@ -653,28 +654,28 @@ export function AllGuidesDownloadSlide() {
   const tools = Object.entries(mobileSetupGuides);
 
   return (
-    <div className={`min-h-[500px] rounded-3xl p-8 flex flex-col items-center justify-center ${
+    <div className={`min-h-[350px] sm:min-h-[400px] md:min-h-[500px] rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center ${
       isDark ? 'bg-slate-800/50' : 'bg-white'
     }`}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
+        className="text-center mb-4 sm:mb-6 md:mb-8"
       >
-        <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mx-auto mb-4 shadow-xl`}>
-          <Download className="w-10 h-10 text-white" />
+        <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-xl`}>
+          <Download className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
         </div>
-        <h2 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
+        <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
           Take These Guides With You
         </h2>
-        <p className={`text-lg ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
+        <p className={`text-sm sm:text-base md:text-lg ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
           Download mobile setup guides for all three tools
         </p>
       </motion.div>
 
       {/* Tool cards */}
-      <div className="grid md:grid-cols-3 gap-4 mb-8 w-full max-w-3xl">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8 w-full max-w-3xl">
         {tools.map(([key, guide], i) => {
           const Icon = guide.icon;
           return (
@@ -685,16 +686,16 @@ export function AllGuidesDownloadSlide() {
               transition={{ delay: i * 0.1 }}
               whileHover={{ scale: 1.02, y: -4 }}
               onClick={() => downloadGuide(key)}
-              className={`cursor-pointer rounded-2xl p-5 text-center transition-all ${
+              className={`cursor-pointer rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 text-center transition-all ${
                 isDark
                   ? 'bg-slate-700/50 hover:bg-slate-700 border border-slate-600'
                   : 'bg-slate-50 hover:bg-white border border-slate-200 hover:shadow-lg'
               }`}
             >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${guide.gradient} flex items-center justify-center mx-auto mb-3 shadow-lg`}>
-                <Icon className="w-6 h-6 text-white" />
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br ${guide.gradient} flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg`}>
+                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h3 className={`font-semibold mb-1 ${isDark ? 'text-white' : 'text-slate-800'}`}>
+              <h3 className={`font-semibold text-sm sm:text-base mb-1 ${isDark ? 'text-white' : 'text-slate-800'}`}>
                 {guide.title}
               </h3>
               <p className={`text-xs flex items-center justify-center gap-1 ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
@@ -714,11 +715,11 @@ export function AllGuidesDownloadSlide() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={downloadAllGuides}
-        className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl shadow-xl shadow-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/40 transition-all"
+        className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 md:px-8 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl sm:rounded-2xl shadow-xl shadow-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/40 transition-all text-sm sm:text-base"
       >
-        <Download size={22} />
+        <Download size={18} className="sm:w-[22px] sm:h-[22px]" />
         <span>Download All Guides</span>
-        <ArrowRight size={18} />
+        <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
       </motion.button>
 
       {/* Footer note */}
@@ -726,7 +727,7 @@ export function AllGuidesDownloadSlide() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className={`mt-6 text-sm ${isDark ? 'text-white/40' : 'text-slate-400'}`}
+        className={`mt-4 sm:mt-5 md:mt-6 text-xs sm:text-sm ${isDark ? 'text-white/40' : 'text-slate-400'}`}
       >
         Guides include step-by-step instructions for Android & iPhone
       </motion.p>

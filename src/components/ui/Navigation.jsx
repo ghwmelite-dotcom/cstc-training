@@ -1,6 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Presentation, Home, Sun, Moon, LogOut, Maximize2, Minimize2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Presentation,
+  Home,
+  Sun,
+  Moon,
+  LogOut,
+  Maximize2,
+  Minimize2,
+  Keyboard,
+  Info
+} from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 
 export function Navigation({
@@ -17,6 +29,7 @@ export function Navigation({
 }) {
   const { isDark, toggleTheme } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Track fullscreen state changes
   useEffect(() => {
@@ -45,167 +58,271 @@ export function Navigation({
     }
   }, []);
 
+  // Keyboard shortcut for fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'f' || e.key === 'F') {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          toggleFullscreen();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleFullscreen]);
+
   return (
-    <motion.div
-      className="fixed bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-50"
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
-    >
-      {/* Glow backdrop */}
-      <div className={`absolute inset-0 blur-xl rounded-full ${
-        isDark
-          ? 'bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20'
-          : 'bg-gradient-to-r from-cyan-300/30 via-blue-300/30 to-indigo-300/30'
-      }`} />
-
-      {/* Main navigation bar */}
-      <div className={`relative flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 backdrop-blur-xl rounded-full shadow-2xl ${
-        isDark
-          ? 'bg-white/10 border border-white/20'
-          : 'bg-white/80 border border-slate-200'
-      }`}>
-        <NavButton onClick={onHome} title="Go to start (Home)" isDark={isDark}>
-          <Home className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-        </NavButton>
-
-        <Divider isDark={isDark} />
-
-        <NavButton
-          onClick={onPrev}
-          disabled={!canGoPrev}
-          title="Previous (Left Arrow)"
-          isDark={isDark}
-        >
-          <ChevronLeft className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
-        </NavButton>
-
-        {/* Slide counter with gradient */}
-        <div className={`px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full border ${
+    <>
+      {/* Main Navigation Bar */}
+      <motion.div
+        className="fixed bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-50"
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+      >
+        {/* Glow backdrop */}
+        <div className={`absolute inset-0 blur-2xl rounded-full scale-150 ${
           isDark
-            ? 'bg-white/5 border-white/10'
-            : 'bg-slate-100 border-slate-200'
+            ? 'bg-gradient-to-r from-cyan-500/30 via-purple-500/30 to-pink-500/30'
+            : 'bg-gradient-to-r from-cyan-300/40 via-blue-300/40 to-indigo-300/40'
+        }`} />
+
+        {/* Main navigation bar */}
+        <div className={`relative flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 backdrop-blur-xl rounded-2xl sm:rounded-full shadow-2xl ${
+          isDark
+            ? 'bg-slate-900/80 border-2 border-white/20'
+            : 'bg-white/90 border-2 border-slate-200'
         }`}>
-          <span className={`text-xs sm:text-sm font-bold bg-gradient-to-r bg-clip-text text-transparent ${
-            isDark
-              ? 'from-cyan-400 to-purple-400'
-              : 'from-cyan-600 to-blue-600'
-          }`}>
-            {currentSlide + 1}
-          </span>
-          <span className={`mx-0.5 sm:mx-1 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>/</span>
-          <span className={`text-xs sm:text-sm ${isDark ? 'text-white/60' : 'text-slate-600'}`}>
-            {totalSlides}
-          </span>
-        </div>
+          {/* Home Button */}
+          <NavButton onClick={onHome} title="Go to start (Home)" isDark={isDark}>
+            <Home className="w-5 h-5 sm:w-5 sm:h-5" />
+          </NavButton>
 
-        <NavButton
-          onClick={onNext}
-          disabled={!canGoNext}
-          title="Next (Right Arrow)"
-          isDark={isDark}
-          highlight
-        >
-          <ChevronRight className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
-        </NavButton>
+          <Divider isDark={isDark} />
 
-        <Divider isDark={isDark} />
-
-        {/* Theme Toggle */}
-        <NavButton
-          onClick={toggleTheme}
-          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          isDark={isDark}
-        >
-          <motion.div
-            initial={false}
-            animate={{ rotate: isDark ? 0 : 180 }}
-            transition={{ duration: 0.3 }}
+          {/* Previous Button - Large and prominent */}
+          <motion.button
+            onClick={onPrev}
+            disabled={!canGoPrev}
+            title="Previous (Left Arrow)"
+            className={`
+              relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl transition-all duration-200
+              ${!canGoPrev
+                ? 'opacity-30 cursor-not-allowed'
+                : isDark
+                  ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+              }
+            `}
+            whileHover={canGoPrev ? { scale: 1.05, x: -2 } : {}}
+            whileTap={canGoPrev ? { scale: 0.95 } : {}}
           >
-            {isDark ? <Sun className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> : <Moon className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />}
-          </motion.div>
-        </NavButton>
+            <ChevronLeft className="w-7 h-7 sm:w-8 sm:h-8" />
+          </motion.button>
 
-        {/* Fullscreen Toggle */}
-        <NavButton
-          onClick={toggleFullscreen}
-          active={isFullscreen}
-          title={isFullscreen ? 'Exit Fullscreen (F)' : 'Enter Fullscreen (F)'}
-          isDark={isDark}
-        >
-          <motion.div
-            initial={false}
-            animate={{ scale: isFullscreen ? 0.9 : 1 }}
-            transition={{ duration: 0.2, type: 'spring', stiffness: 300 }}
+          {/* Slide counter with gradient - More prominent */}
+          <div className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl border-2 min-w-[80px] sm:min-w-[100px] text-center ${
+            isDark
+              ? 'bg-white/5 border-white/20'
+              : 'bg-slate-50 border-slate-200'
+          }`}>
+            <span className={`text-lg sm:text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent ${
+              isDark
+                ? 'from-cyan-400 to-purple-400'
+                : 'from-cyan-600 to-blue-600'
+            }`}>
+              {currentSlide + 1}
+            </span>
+            <span className={`mx-1 sm:mx-2 text-lg sm:text-xl ${isDark ? 'text-white/40' : 'text-slate-400'}`}>/</span>
+            <span className={`text-lg sm:text-xl font-medium ${isDark ? 'text-white/60' : 'text-slate-500'}`}>
+              {totalSlides}
+            </span>
+          </div>
+
+          {/* Next Button - Large and prominent with highlight */}
+          <motion.button
+            onClick={onNext}
+            disabled={!canGoNext}
+            title="Next (Right Arrow)"
+            className={`
+              relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl transition-all duration-200
+              ${!canGoNext
+                ? 'opacity-30 cursor-not-allowed'
+                : 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40'
+              }
+            `}
+            whileHover={canGoNext ? { scale: 1.05, x: 2 } : {}}
+            whileTap={canGoNext ? { scale: 0.95 } : {}}
+          >
+            <ChevronRight className="w-7 h-7 sm:w-8 sm:h-8" />
+            {canGoNext && (
+              <motion.div
+                className="absolute inset-0 rounded-xl sm:rounded-2xl bg-white/20"
+                animate={{ opacity: [0, 0.5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            )}
+          </motion.button>
+
+          <Divider isDark={isDark} />
+
+          {/* Theme Toggle */}
+          <NavButton
+            onClick={toggleTheme}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            isDark={isDark}
+          >
+            <motion.div
+              initial={false}
+              animate={{ rotate: isDark ? 0 : 180 }}
+              transition={{ duration: 0.3 }}
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </motion.div>
+          </NavButton>
+
+          {/* Fullscreen Toggle */}
+          <NavButton
+            onClick={toggleFullscreen}
+            active={isFullscreen}
+            title={isFullscreen ? 'Exit Fullscreen (F)' : 'Enter Fullscreen (F)'}
+            isDark={isDark}
           >
             {isFullscreen ? (
-              <Minimize2 className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+              <Minimize2 className="w-5 h-5" />
             ) : (
-              <Maximize2 className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+              <Maximize2 className="w-5 h-5" />
             )}
-          </motion.div>
-        </NavButton>
+          </NavButton>
 
-        <NavButton
-          onClick={onPresenter}
-          active={isPresenterOpen}
-          title="Presenter View (P)"
-          isDark={isDark}
+          {/* Presenter View */}
+          <NavButton
+            onClick={onPresenter}
+            active={isPresenterOpen}
+            title="Presenter View (P)"
+            isDark={isDark}
+          >
+            <Presentation className="w-5 h-5" />
+          </NavButton>
+
+          {/* Keyboard Shortcuts Info */}
+          <NavButton
+            onClick={() => setShowShortcuts(!showShortcuts)}
+            active={showShortcuts}
+            title="Keyboard Shortcuts"
+            isDark={isDark}
+          >
+            <Keyboard className="w-5 h-5" />
+          </NavButton>
+
+          <Divider isDark={isDark} />
+
+          {/* Logout */}
+          <NavButton
+            onClick={onLogout}
+            title="Exit Training"
+            isDark={isDark}
+            danger
+          >
+            <LogOut className="w-5 h-5" />
+          </NavButton>
+        </div>
+
+        {/* Keyboard hint - visible by default */}
+        <motion.div
+          className={`absolute -bottom-8 sm:-bottom-9 left-1/2 -translate-x-1/2 flex items-center gap-2 text-xs sm:text-sm whitespace-nowrap ${
+            isDark ? 'text-white/50' : 'text-slate-500'
+          }`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
         >
-          <Presentation className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-        </NavButton>
-
-        <Divider isDark={isDark} />
-
-        <NavButton
-          onClick={onLogout}
-          title="Lock Presentation"
-          isDark={isDark}
-          danger
-        >
-          <LogOut className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-        </NavButton>
-      </div>
-
-      {/* Keyboard hint - hidden on mobile */}
-      <motion.div
-        className={`absolute -bottom-7 sm:-bottom-8 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs whitespace-nowrap hidden sm:block ${
-          isDark ? 'text-white/30' : 'text-slate-400'
-        }`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-      >
-        Use arrow keys or scroll to navigate
+          <span className={`px-2 py-0.5 rounded ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}>←</span>
+          <span className={`px-2 py-0.5 rounded ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}>→</span>
+          <span>Arrow keys to navigate</span>
+        </motion.div>
       </motion.div>
-    </motion.div>
+
+      {/* Keyboard Shortcuts Panel */}
+      <AnimatePresence>
+        {showShortcuts && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-32 sm:bottom-36 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className={`p-4 sm:p-6 rounded-2xl shadow-2xl backdrop-blur-xl border-2 ${
+              isDark
+                ? 'bg-slate-900/95 border-white/20'
+                : 'bg-white/95 border-slate-200'
+            }`}>
+              <div className="flex items-center gap-2 mb-4">
+                <Keyboard className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                  Keyboard Shortcuts
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                {[
+                  { keys: '← / →', action: 'Previous / Next' },
+                  { keys: '↑ / ↓', action: 'Skip Slide' },
+                  { keys: 'Home', action: 'First Slide' },
+                  { keys: 'End', action: 'Last Slide' },
+                  { keys: 'F', action: 'Fullscreen' },
+                  { keys: '1-9', action: 'Jump to Slide' },
+                ].map((shortcut, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <kbd className={`px-2 py-1 rounded text-xs font-mono min-w-[50px] text-center ${
+                      isDark ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-700'
+                    }`}>
+                      {shortcut.keys}
+                    </kbd>
+                    <span className={`text-sm ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
+                      {shortcut.action}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Progress bar at top */}
+      <div className="fixed top-0 left-0 right-0 z-40 h-1">
+        <motion.div
+          className="h-full bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500"
+          initial={{ width: 0 }}
+          animate={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}
+          transition={{ duration: 0.3 }}
+        />
+      </div>
+    </>
   );
 }
 
-function NavButton({ children, onClick, disabled, title, active, highlight, danger, isDark }) {
+function NavButton({ children, onClick, disabled, title, active, danger, isDark }) {
   return (
     <motion.button
       onClick={onClick}
       disabled={disabled}
       title={title}
       className={`
-        relative p-2 sm:p-2.5 rounded-full transition-all duration-200
+        relative p-2.5 sm:p-3 rounded-xl transition-all duration-200
         ${disabled
           ? 'opacity-30 cursor-not-allowed'
           : danger
           ? isDark
-            ? 'text-red-400/70 hover:text-red-400 hover:bg-red-500/20'
-            : 'text-red-400 hover:text-red-500 hover:bg-red-50'
+            ? 'text-red-400/80 hover:text-red-400 hover:bg-red-500/20'
+            : 'text-red-500 hover:text-red-600 hover:bg-red-50'
           : active
           ? isDark
-            ? 'bg-gradient-to-r from-cyan-500/30 to-purple-500/30 text-cyan-300'
-            : 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-600'
-          : highlight
-          ? isDark
-            ? 'text-white/90 hover:text-white'
-            : 'text-slate-700 hover:text-slate-900'
+            ? 'bg-gradient-to-r from-cyan-500/30 to-purple-500/30 text-cyan-300 border border-cyan-500/30'
+            : 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-600 border border-cyan-200'
           : isDark
-            ? 'text-white/60 hover:text-white hover:bg-white/10'
+            ? 'text-white/70 hover:text-white hover:bg-white/10'
             : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
         }
       `}
@@ -213,27 +330,13 @@ function NavButton({ children, onClick, disabled, title, active, highlight, dang
       whileTap={!disabled ? { scale: 0.95 } : {}}
     >
       {children}
-      {highlight && !disabled && (
-        <motion.div
-          className={`absolute inset-0 rounded-full ${
-            isDark
-              ? 'bg-gradient-to-r from-cyan-500/20 to-purple-500/20'
-              : 'bg-gradient-to-r from-cyan-300/30 to-blue-300/30'
-          }`}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.5, 0.8, 0.5],
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      )}
     </motion.button>
   );
 }
 
 function Divider({ isDark }) {
   return (
-    <div className={`w-px h-5 sm:h-6 bg-gradient-to-b from-transparent to-transparent ${
+    <div className={`w-px h-8 sm:h-10 bg-gradient-to-b from-transparent to-transparent ${
       isDark ? 'via-white/20' : 'via-slate-300'
     }`} />
   );

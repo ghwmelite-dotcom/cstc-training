@@ -828,7 +828,7 @@ export function TrelloPractice({ onComplete, progress }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-no-slide-nav>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

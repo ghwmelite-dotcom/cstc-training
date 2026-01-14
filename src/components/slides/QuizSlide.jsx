@@ -23,24 +23,24 @@ export function QuizSlide({ question, options, correctAnswer, questionId, onAnsw
   const isCorrect = selected === correctAnswer;
 
   return (
-    <div className="relative min-h-[500px] flex items-center justify-center overflow-hidden rounded-3xl">
+    <div className="relative min-h-[350px] sm:min-h-[400px] md:min-h-[500px] flex items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl">
       {isDark && <AnimatedBackground variant="default" />}
       {!isDark && (
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 rounded-2xl sm:rounded-3xl" />
       )}
 
-      <div className="relative z-10 w-full max-w-4xl px-6">
-        <div className={`rounded-3xl border backdrop-blur-xl p-8 md:p-10 ${isDark ? 'bg-white/10 border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' : 'bg-white/80 border-slate-200 shadow-xl'}`}>
+      <div className="relative z-10 w-full max-w-4xl px-3 sm:px-4 md:px-6">
+        <div className={`rounded-2xl sm:rounded-3xl border backdrop-blur-xl p-4 sm:p-6 md:p-8 lg:p-10 ${isDark ? 'bg-white/10 border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]' : 'bg-white/80 border-slate-200 shadow-xl'}`}>
           {/* Header badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 mb-8"
+            className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 md:mb-8"
           >
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-              <HelpCircle className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+              <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <span className={`text-sm font-bold uppercase tracking-wider ${isDark ? 'text-purple-300' : 'text-purple-600'}`}>
+            <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider ${isDark ? 'text-purple-300' : 'text-purple-600'}`}>
               Knowledge Check
             </span>
           </motion.div>
@@ -49,13 +49,13 @@ export function QuizSlide({ question, options, correctAnswer, questionId, onAnsw
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`text-2xl md:text-3xl font-bold mb-8 ${isDark ? 'text-white' : 'text-slate-800'}`}
+            className={`text-lg sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 md:mb-8 ${isDark ? 'text-white' : 'text-slate-800'}`}
           >
             {question}
           </motion.h2>
 
           {/* Options */}
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-3 md:space-y-4">
             {options.map((option, index) => {
               const isSelected = selected === index;
               const isCorrectOption = index === correctAnswer;
@@ -72,7 +72,7 @@ export function QuizSlide({ question, options, correctAnswer, questionId, onAnsw
                   disabled={showFeedback}
                   whileHover={!showFeedback ? { scale: 1.02, x: 10 } : {}}
                   whileTap={!showFeedback ? { scale: 0.98 } : {}}
-                  className={`w-full p-5 rounded-2xl text-left transition-all flex items-center gap-4 border backdrop-blur-sm group ${
+                  className={`w-full p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl text-left transition-all flex items-center gap-2 sm:gap-3 md:gap-4 border backdrop-blur-sm group ${
                     showAsCorrect
                       ? 'bg-emerald-500/20 border-emerald-400/50 shadow-lg shadow-emerald-500/20'
                       : showAsWrong
@@ -84,7 +84,7 @@ export function QuizSlide({ question, options, correctAnswer, questionId, onAnsw
                 >
                   {/* Option letter */}
                   <motion.span
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all ${
+                    className={`w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-xs sm:text-sm font-bold transition-all flex-shrink-0 ${
                       showAsCorrect
                         ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg'
                         : showAsWrong
@@ -99,7 +99,7 @@ export function QuizSlide({ question, options, correctAnswer, questionId, onAnsw
                   </motion.span>
 
                   {/* Option text */}
-                  <span className={`flex-1 ${
+                  <span className={`flex-1 text-sm sm:text-base min-w-0 ${
                     showAsCorrect ? 'text-emerald-200 font-medium' :
                     showAsWrong ? 'text-red-200' :
                     isSelected ? 'text-purple-200 font-medium' :
@@ -114,8 +114,9 @@ export function QuizSlide({ question, options, correctAnswer, questionId, onAnsw
                       initial={{ scale: 0, rotate: -180 }}
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ type: 'spring', stiffness: 200 }}
+                      className="flex-shrink-0"
                     >
-                      <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+                      <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-emerald-400" />
                     </motion.div>
                   )}
                   {showAsWrong && (
@@ -123,8 +124,9 @@ export function QuizSlide({ question, options, correctAnswer, questionId, onAnsw
                       initial={{ scale: 0, rotate: 180 }}
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ type: 'spring', stiffness: 200 }}
+                      className="flex-shrink-0"
                     >
-                      <XCircle className="w-7 h-7 text-red-400" />
+                      <XCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-red-400" />
                     </motion.div>
                   )}
                 </motion.button>
@@ -139,45 +141,45 @@ export function QuizSlide({ question, options, correctAnswer, questionId, onAnsw
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                className={`mt-8 p-5 rounded-2xl border backdrop-blur-sm ${
+                className={`mt-4 sm:mt-6 md:mt-8 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border backdrop-blur-sm ${
                   isCorrect
                     ? 'bg-emerald-500/10 border-emerald-400/30'
                     : 'bg-amber-500/10 border-amber-400/30'
                 }`}
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
                   {isCorrect ? (
                     <>
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: 'spring', stiffness: 300, delay: 0.2 }}
-                        className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg flex-shrink-0"
                       >
-                        <Sparkles className="w-6 h-6 text-white" />
+                        <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                       </motion.div>
-                      <div>
-                        <span className="font-bold text-emerald-300 text-lg block">Correct!</span>
-                        <span className="text-emerald-200/70 text-sm">Great job, you got it right!</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="font-bold text-emerald-300 text-base sm:text-lg block">Correct!</span>
+                        <span className="text-emerald-200/70 text-xs sm:text-sm">Great job, you got it right!</span>
                       </div>
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ type: 'spring', delay: 0.3 }}
-                        className="ml-auto flex items-center gap-2 px-4 py-2 bg-emerald-500/20 rounded-full text-emerald-400"
+                        className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 bg-emerald-500/20 rounded-full text-emerald-400 flex-shrink-0"
                       >
-                        <Zap size={16} />
-                        <span className="font-bold">+25</span>
+                        <Zap size={14} className="sm:w-4 sm:h-4" />
+                        <span className="font-bold text-sm sm:text-base">+25</span>
                       </motion.div>
                     </>
                   ) : (
                     <>
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg">
-                        <XCircle className="w-6 h-6 text-white" />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg flex-shrink-0">
+                        <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                       </div>
-                      <div>
-                        <span className="font-bold text-amber-300 text-lg block">Not quite</span>
-                        <span className="text-amber-200/70 text-sm">
+                      <div className="min-w-0">
+                        <span className="font-bold text-amber-300 text-base sm:text-lg block">Not quite</span>
+                        <span className="text-amber-200/70 text-xs sm:text-sm">
                           The correct answer is <strong>{String.fromCharCode(65 + correctAnswer)}</strong>
                         </span>
                       </div>

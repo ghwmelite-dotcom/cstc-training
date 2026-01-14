@@ -7,14 +7,14 @@ export function GlassContentSlide({ title, children, variant = 'default', step =
   const { isDark } = useTheme();
 
   return (
-    <div className="relative min-h-[500px] flex items-center justify-center overflow-hidden rounded-3xl">
+    <div className="relative min-h-[350px] sm:min-h-[400px] md:min-h-[500px] flex items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl">
       {isDark && <AnimatedBackground variant={variant} />}
       {!isDark && (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-blue-50/50 to-indigo-100 rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-blue-50/50 to-indigo-100 rounded-2xl sm:rounded-3xl" />
       )}
 
-      <div className="relative z-10 w-full max-w-5xl px-6">
-        <div className={`rounded-3xl border backdrop-blur-xl p-8 md:p-12 ${
+      <div className="relative z-10 w-full max-w-5xl px-3 sm:px-4 md:px-6">
+        <div className={`rounded-2xl sm:rounded-3xl border backdrop-blur-xl p-4 sm:p-6 md:p-8 lg:p-12 ${
           isDark
             ? 'bg-white/10 border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
             : 'bg-white/80 border-slate-200 shadow-xl'
@@ -22,7 +22,7 @@ export function GlassContentSlide({ title, children, variant = 'default', step =
           <motion.h2
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`text-3xl md:text-4xl font-bold mb-8 ${
+            className={`text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 ${
               isDark ? 'text-white' : 'text-slate-800'
             }`}
           >

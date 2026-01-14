@@ -124,20 +124,11 @@ export function useSlideNavigation(totalSlides, getSlideSteps) {
     }
   }, [nextStep, prevStep]);
 
-  // Click navigation (click right half = next, left half = prev)
-  const handleClick = useCallback((e) => {
-    if (e.target.closest('button, a, input, [role="button"]')) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const halfWidth = rect.width / 2;
-
-    if (clickX > halfWidth) {
-      nextStep();
-    } else {
-      prevStep();
-    }
-  }, [nextStep, prevStep]);
+  // Note: Click navigation removed to prevent conflicts with interactive elements
+  // Navigation is now done via:
+  // - Arrow keys (Left/Right for prev/next, Up/Down for slide jumps)
+  // - Touch swipe on mobile devices
+  // - Navigation bar buttons
 
   return {
     currentSlide,
@@ -149,10 +140,10 @@ export function useSlideNavigation(totalSlides, getSlideSteps) {
     nextSlide,
     prevSlide,
     handlers: {
+      // Touch handlers for mobile swipe navigation
       onTouchStart: handleTouchStart,
       onTouchMove: handleTouchMove,
       onTouchEnd: handleTouchEnd,
-      onClick: handleClick,
     },
     progress: {
       slide: currentSlide,

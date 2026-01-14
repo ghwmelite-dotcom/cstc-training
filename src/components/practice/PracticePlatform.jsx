@@ -388,7 +388,7 @@ export function PracticePlatform() {
   };
 
   return (
-    <div className="relative w-full min-h-[600px] rounded-3xl overflow-hidden">
+    <div className="relative w-full min-h-[600px] rounded-3xl overflow-hidden" data-no-slide-nav>
       {/* Animated background */}
       <div
         className={`absolute inset-0 ${

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy,
@@ -244,103 +244,323 @@ export function ProgressRing({ progress, size = 60, strokeWidth = 4 }) {
   );
 }
 
-// Completion Certificate - Enhanced
-export function CompletionCertificate({ name, date, points, totalPoints, onDownload, onClose }) {
+// Completion Certificate - Enhanced with proper download and responsive design
+export function CompletionCertificate({ name, date, points, totalPoints, onClose }) {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const certificateRef = useRef(null);
+
+  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const displayName = name || 'Training Participant';
+
+  const handleDownload = () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+
+    try {
+      // Create canvas manually for reliable certificate generation
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Set canvas size (A4-ish proportions)
+      const width = 800;
+      const height = 600;
+      canvas.width = width * 2; // 2x for retina quality
+      canvas.height = height * 2;
+      ctx.scale(2, 2);
+
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, '#0f172a');
+      gradient.addColorStop(0.5, '#1e1b4b');
+      gradient.addColorStop(1, '#0f172a');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      // Border
+      ctx.strokeStyle = '#a855f7';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(20, 20, width - 40, height - 40);
+
+      // Inner border
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(40, 40, width - 80, height - 80);
+
+      // Corner decorations
+      ctx.strokeStyle = '#22d3ee';
+      ctx.lineWidth = 2;
+      // Top left
+      ctx.beginPath();
+      ctx.moveTo(30, 70);
+      ctx.lineTo(30, 30);
+      ctx.lineTo(70, 30);
+      ctx.stroke();
+      // Top right
+      ctx.beginPath();
+      ctx.moveTo(width - 70, 30);
+      ctx.lineTo(width - 30, 30);
+      ctx.lineTo(width - 30, 70);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#a855f7';
+      // Bottom left
+      ctx.beginPath();
+      ctx.moveTo(30, height - 70);
+      ctx.lineTo(30, height - 30);
+      ctx.lineTo(70, height - 30);
+      ctx.stroke();
+      // Bottom right
+      ctx.beginPath();
+      ctx.moveTo(width - 70, height - 30);
+      ctx.lineTo(width - 30, height - 30);
+      ctx.lineTo(width - 30, height - 70);
+      ctx.stroke();
+
+      // Award icon (simple star)
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      const starX = width / 2;
+      const starY = 85;
+      const starSize = 30;
+      for (let i = 0; i < 5; i++) {
+        const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+        const x = starX + Math.cos(angle) * starSize;
+        const y = starY + Math.sin(angle) * starSize;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      // Title
+      ctx.fillStyle = '#22d3ee';
+      ctx.font = 'bold 32px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Certificate of Completion', width / 2, 150);
+
+      // Subtitle
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.font = '16px Arial, sans-serif';
+      ctx.fillText('Digital Productivity Tools Training', width / 2, 180);
+
+      // Divider line
+      const dividerGradient = ctx.createLinearGradient(width / 2 - 80, 0, width / 2 + 80, 0);
+      dividerGradient.addColorStop(0, '#22d3ee');
+      dividerGradient.addColorStop(0.5, '#a855f7');
+      dividerGradient.addColorStop(1, '#ec4899');
+      ctx.strokeStyle = dividerGradient;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(width / 2 - 80, 205);
+      ctx.lineTo(width / 2 + 80, 205);
+      ctx.stroke();
+
+      // "This is to certify that"
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.font = '16px Arial, sans-serif';
+      ctx.fillText('This is to certify that', width / 2, 250);
+
+      // Participant name
+      ctx.fillStyle = '#a855f7';
+      ctx.font = 'bold 36px Arial, sans-serif';
+      ctx.fillText(displayName, width / 2, 295);
+
+      // "has successfully completed"
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.font = '16px Arial, sans-serif';
+      ctx.fillText('has successfully completed the training on', width / 2, 335);
+
+      // Tools
+      const tools = ['Google Calendar', 'Trello', 'Gmail', 'Google Docs'];
+      const toolsText = tools.join('  •  ');
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.font = '14px Arial, sans-serif';
+      ctx.fillText(toolsText, width / 2, 380);
+
+      // Points
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 18px Arial, sans-serif';
+      ctx.fillText(`★ ${points} / ${totalPoints} Points Earned`, width / 2, 430);
+
+      // Date
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.font = '14px Arial, sans-serif';
+      ctx.fillText(`Completed on ${formattedDate}`, width / 2, 470);
+
+      // Footer line
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(100, 510);
+      ctx.lineTo(width - 100, 510);
+      ctx.stroke();
+
+      // Footer text
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.font = '12px Arial, sans-serif';
+      ctx.fillText('Civil Service Training Centre • Productivity Tools Training Program', width / 2, 540);
+
+      // Download the canvas
+      const link = document.createElement('a');
+      const safeName = displayName.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_') || 'Participant';
+      link.download = `Certificate_${safeName}_${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      setIsDownloading(false);
+
+    } catch (error) {
+      console.error('Error generating certificate:', error);
+      alert('Error generating certificate. Please take a screenshot instead.');
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.8, rotateY: -15 }}
-        animate={{ scale: 1, rotateY: 0 }}
-        exit={{ scale: 0.8 }}
-        className="relative bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900 rounded-3xl shadow-2xl p-8 max-w-2xl w-full border border-white/20"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="relative my-4 sm:my-8 w-full max-w-[95vw] sm:max-w-2xl"
         onClick={(e) => e.stopPropagation()}
-        id="certificate"
       >
-        {/* Decorative corners with glow */}
-        <div className="absolute top-4 left-4 w-16 h-16 border-l-2 border-t-2 border-cyan-400/50 rounded-tl-2xl" />
-        <div className="absolute top-4 right-4 w-16 h-16 border-r-2 border-t-2 border-purple-400/50 rounded-tr-2xl" />
-        <div className="absolute bottom-4 left-4 w-16 h-16 border-l-2 border-b-2 border-purple-400/50 rounded-bl-2xl" />
-        <div className="absolute bottom-4 right-4 w-16 h-16 border-r-2 border-b-2 border-cyan-400/50 rounded-br-2xl" />
+        {/* Certificate Content - This is what gets downloaded */}
+        <div
+          ref={certificateRef}
+          data-certificate="true"
+          className="relative rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-8 md:p-12 w-full border-2 border-purple-500/30"
+          style={{
+            background: '#0f172a',
+            backgroundImage: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+          }}
+        >
+          {/* Decorative corners - hidden on very small screens */}
+          <div className="hidden sm:block absolute top-4 left-4 w-12 sm:w-16 h-12 sm:h-16 border-l-2 border-t-2 border-cyan-400 rounded-tl-2xl" />
+          <div className="hidden sm:block absolute top-4 right-4 w-12 sm:w-16 h-12 sm:h-16 border-r-2 border-t-2 border-purple-400 rounded-tr-2xl" />
+          <div className="hidden sm:block absolute bottom-4 left-4 w-12 sm:w-16 h-12 sm:h-16 border-l-2 border-b-2 border-purple-400 rounded-bl-2xl" />
+          <div className="hidden sm:block absolute bottom-4 right-4 w-12 sm:w-16 h-12 sm:h-16 border-r-2 border-b-2 border-cyan-400 rounded-br-2xl" />
 
-        {/* Background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-500/20 blur-3xl rounded-full" />
+          {/* Inner border - hidden on mobile */}
+          <div className="hidden sm:block absolute inset-6 sm:inset-8 border border-white/10 rounded-xl sm:rounded-2xl pointer-events-none" />
 
-        <div className="text-center relative">
-          {/* Header */}
-          <motion.div
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ repeat: Infinity, duration: 2, repeatDelay: 3 }}
+          <div className="text-center relative">
+            {/* Logo/Icon */}
+            <div className="mb-4 sm:mb-6">
+              <Award
+                className="w-14 h-14 sm:w-20 sm:h-20 mx-auto text-amber-400"
+                style={{ filter: 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.5))' }}
+              />
+            </div>
+
+            {/* Title */}
+            <h1
+              className="text-xl sm:text-3xl md:text-4xl font-bold text-cyan-400 mb-1 sm:mb-2"
+              style={{ textShadow: '0 0 20px rgba(34, 211, 238, 0.3)' }}
+            >
+              Certificate of Completion
+            </h1>
+            <p className="text-white/60 mb-4 sm:mb-8 text-sm sm:text-lg">
+              Digital Productivity Tools Training
+            </p>
+
+            {/* Divider */}
+            <div
+              className="w-20 sm:w-32 h-1 mx-auto mb-4 sm:mb-8 rounded-full"
+              style={{ background: 'linear-gradient(90deg, #22d3ee, #a855f7, #ec4899)' }}
+            />
+
+            {/* Recipient */}
+            <p className="text-white/60 mb-2 sm:mb-3 text-sm sm:text-lg">This is to certify that</p>
+            <h2
+              className="text-2xl sm:text-4xl md:text-5xl font-bold text-purple-400 mb-2 sm:mb-3 break-words px-2"
+              style={{ textShadow: '0 0 20px rgba(168, 85, 247, 0.4)' }}
+            >
+              {displayName}
+            </h2>
+            <p className="text-white/60 mb-4 sm:mb-8 text-sm sm:text-lg">
+              has successfully completed the training on
+            </p>
+
+            {/* Tools */}
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-4 sm:mb-8 px-2">
+              {['Google Calendar', 'Trello', 'Gmail', 'Google Docs'].map((tool) => (
+                <span
+                  key={tool}
+                  className="px-2 sm:px-4 py-1 sm:py-2 rounded-full border border-white/30 text-white font-medium text-xs sm:text-sm"
+                  style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                >
+                  {tool}
+                </span>
+              ))}
+            </div>
+
+            {/* Score */}
+            <div
+              className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-full text-amber-400 font-bold mb-4 sm:mb-6 border border-amber-400/50 text-sm sm:text-base"
+              style={{ backgroundColor: 'rgba(251, 191, 36, 0.15)' }}
+            >
+              <Star className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>{points} / {totalPoints} Points</span>
+            </div>
+
+            {/* Date */}
+            <p className="text-white/50 text-xs sm:text-sm mb-4">
+              Completed on {formattedDate}
+            </p>
+
+            {/* Footer */}
+            <div className="mt-4 sm:mt-8 pt-4 sm:pt-6 border-t border-white/10">
+              <p className="text-white/40 text-[10px] sm:text-xs">
+                Civil Service Training Centre &bull; Productivity Tools Training Program
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions - Outside the downloadable area */}
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-4 sm:mt-6 px-2">
+          <motion.button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-xl font-medium shadow-lg disabled:opacity-70 w-full sm:w-auto"
+            whileHover={{ scale: isDownloading ? 1 : 1.02 }}
+            whileTap={{ scale: isDownloading ? 1 : 0.98 }}
           >
-            <Award className="w-20 h-20 mx-auto text-amber-400 mb-4" />
-          </motion.div>
-
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-            Certificate of Completion
-          </h1>
-          <p className="text-white/60 mb-8">
-            Digital Productivity Tools Training
-          </p>
-
-          {/* Recipient */}
-          <p className="text-white/50 mb-2">This is to certify that</p>
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-2">
-            {name || 'Training Participant'}
-          </h2>
-          <p className="text-white/50 mb-8">
-            has successfully completed the training on
-          </p>
-
-          {/* Tools */}
-          <div className="flex justify-center gap-4 mb-8">
-            {['Google Calendar', 'Trello', 'Asana'].map((tool) => (
-              <span
-                key={tool}
-                className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 text-white/90 font-medium"
-              >
-                {tool}
-              </span>
-            ))}
-          </div>
-
-          {/* Score */}
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 rounded-full text-amber-400 font-bold mb-6">
-            <Star className="w-5 h-5" />
-            <span>{points} / {totalPoints} Points Earned</span>
-          </div>
-
-          {/* Date */}
-          <p className="text-white/40 text-sm mb-8">
-            Completed on {new Date(date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
-
-          {/* Actions */}
-          <div className="flex justify-center gap-4">
-            <motion.button
-              onClick={onDownload}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-xl font-medium shadow-lg"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Sparkles size={18} />
-              <span>Download Certificate</span>
-            </motion.button>
-            <button
-              onClick={onClose}
-              className="px-6 py-3 bg-white/10 text-white/80 rounded-xl font-medium hover:bg-white/20 transition-colors"
-            >
-              Close
-            </button>
-          </div>
+            {isDownloading ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                />
+                <span>Generating...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={18} />
+                <span>Download Certificate</span>
+              </>
+            )}
+          </motion.button>
+          <button
+            onClick={onClose}
+            className="px-6 py-3 bg-white/10 text-white/80 rounded-xl font-medium hover:bg-white/20 transition-colors w-full sm:w-auto"
+          >
+            Close
+          </button>
         </div>
       </motion.div>
     </motion.div>

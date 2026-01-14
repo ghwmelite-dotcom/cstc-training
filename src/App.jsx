@@ -74,6 +74,18 @@ function App() {
     gamification.updateSlideProgress(currentSlide);
   }, [currentSlide]);
 
+  // Show certificate when training is complete (reached last slide)
+  useEffect(() => {
+    if (currentSlide === slidesConfig.length - 1 && !gamification.completedAt) {
+      // Mark training as complete
+      gamification.markComplete();
+      // Show certificate after a short delay
+      setTimeout(() => {
+        setShowCertificate(true);
+      }, 1500);
+    }
+  }, [currentSlide, gamification.completedAt]);
+
   // Sync quiz scores
   useEffect(() => {
     gamification.updateQuizScore(quizState.score.correct, quizState.score.total);
@@ -427,10 +439,17 @@ function App() {
     });
   }, [currentSlide, currentStep, quizState, isDark]);
 
+  // Handle authentication with trainee name
+  const handleAuthenticated = (name) => {
+    if (name) {
+      gamification.setParticipantName(name);
+    }
+  };
+
   // Render presenter view if in presenter mode
   if (isPresenterView) {
     return (
-      <PinProtection>
+      <PinProtection onAuthenticated={handleAuthenticated}>
         <PresenterView slides={slides} currentSlide={currentSlide} currentStep={currentStep} />
       </PinProtection>
     );
@@ -439,7 +458,7 @@ function App() {
   const currentSlideConfig = slidesConfig[currentSlide];
 
   return (
-    <PinProtection>
+    <PinProtection onAuthenticated={handleAuthenticated}>
       <div
         className="h-screen w-screen overflow-hidden select-none relative"
         {...handlers}
@@ -592,7 +611,6 @@ function App() {
             date={gamification.completedAt}
             points={gamification.points}
             totalPoints={gamification.totalPoints}
-            onDownload={handleDownloadPDF}
             onClose={() => setShowCertificate(false)}
           />
         )}
