@@ -17,21 +17,21 @@ export function HeroSlide({ title, subtitle, icon: Icon, accentColor = 'cyan', s
   const color = colors[accentColor] || colors.cyan;
 
   return (
-    <div className="relative min-h-[500px] flex items-center justify-center overflow-hidden rounded-3xl">
+    <div className="relative min-h-[400px] sm:min-h-[450px] md:min-h-[500px] flex items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl">
       {isDark && <AnimatedBackground variant="default" />}
       {!isDark && (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 rounded-2xl sm:rounded-3xl" />
       )}
       {isDark && <FloatingShapes />}
 
-      <div className="relative z-10 text-center px-8 max-w-4xl">
+      <div className="relative z-10 text-center px-4 sm:px-6 md:px-8 max-w-4xl">
         {/* CSTC Logo */}
         {showLogo && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="mb-6"
+            className="mb-4 sm:mb-6"
           >
             <motion.div
               className="relative inline-block"
@@ -46,7 +46,7 @@ export function HeroSlide({ title, subtitle, icon: Icon, accentColor = 'cyan', s
               <img
                 src="/cstc-logo.jpg"
                 alt="Civil Service Training Centre"
-                className="relative w-28 h-28 md:w-32 md:h-32 object-contain rounded-2xl shadow-xl"
+                className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain rounded-xl sm:rounded-2xl shadow-xl"
                 style={{
                   filter: isDark ? 'brightness(1.1)' : 'none',
                 }}
@@ -54,7 +54,7 @@ export function HeroSlide({ title, subtitle, icon: Icon, accentColor = 'cyan', s
 
               {/* Subtle ring animation */}
               <motion.div
-                className={`absolute inset-0 rounded-2xl border-2 ${isDark ? 'border-white/20' : 'border-blue-300/50'}`}
+                className={`absolute inset-0 rounded-xl sm:rounded-2xl border-2 ${isDark ? 'border-white/20' : 'border-blue-300/50'}`}
                 animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               />
@@ -106,7 +106,7 @@ export function HeroSlide({ title, subtitle, icon: Icon, accentColor = 'cyan', s
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className={`text-5xl md:text-7xl font-black mb-6 leading-tight ${isDark ? 'text-white' : 'text-slate-800'}`}
+          className={`text-3xl sm:text-5xl md:text-7xl font-black mb-4 sm:mb-6 leading-tight ${isDark ? 'text-white' : 'text-slate-800'}`}
         >
           <span className="inline-block">
             {title.split(' ').map((word, i) => (
@@ -129,7 +129,7 @@ export function HeroSlide({ title, subtitle, icon: Icon, accentColor = 'cyan', s
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className={`text-xl md:text-2xl max-w-2xl mx-auto ${isDark ? 'text-white/70' : 'text-slate-600'}`}
+            className={`text-base sm:text-xl md:text-2xl max-w-2xl mx-auto ${isDark ? 'text-white/70' : 'text-slate-600'}`}
           >
             {subtitle}
           </motion.p>
@@ -140,7 +140,7 @@ export function HeroSlide({ title, subtitle, icon: Icon, accentColor = 'cyan', s
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 1, delay: 0.8 }}
-          className={`w-32 h-1 bg-gradient-to-r ${color.gradient} rounded-full mx-auto mt-8`}
+          className={`w-20 sm:w-32 h-1 bg-gradient-to-r ${color.gradient} rounded-full mx-auto mt-4 sm:mt-6 md:mt-8`}
         />
 
         {/* Scroll hint - with beautiful spacing */}
@@ -148,29 +148,29 @@ export function HeroSlide({ title, subtitle, icon: Icon, accentColor = 'cyan', s
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 0.5 }}
-          className="mt-16 flex flex-col items-center gap-3"
+          className="mt-8 sm:mt-12 md:mt-16 flex flex-col items-center gap-2 sm:gap-3"
         >
           {/* Decorative dots */}
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
             {[0, 1, 2].map((i) => (
               <motion.div
                 key={i}
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 1.3 + i * 0.1 }}
-                className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-white/20' : 'bg-slate-300'}`}
+                className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${isDark ? 'bg-white/20' : 'bg-slate-300'}`}
               />
             ))}
           </div>
 
           <motion.div
-            className={`px-5 py-2.5 rounded-full backdrop-blur-sm border ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-full backdrop-blur-sm border ${
               isDark
                 ? 'bg-white/5 border-white/10'
                 : 'bg-white/60 border-slate-200'
             }`}
           >
-            <span className={`text-sm font-medium ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+            <span className={`text-xs sm:text-sm font-medium ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
               Press Space or Arrow Keys to continue
             </span>
           </motion.div>
@@ -178,9 +178,9 @@ export function HeroSlide({ title, subtitle, icon: Icon, accentColor = 'cyan', s
           <motion.div
             animate={{ y: [0, 6, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-            className="mt-1"
+            className="mt-0.5 sm:mt-1"
           >
-            <ArrowRight className={`w-5 h-5 rotate-90 ${isDark ? 'text-white/30' : 'text-slate-400'}`} />
+            <ArrowRight className={`w-4 h-4 sm:w-5 sm:h-5 rotate-90 ${isDark ? 'text-white/30' : 'text-slate-400'}`} />
           </motion.div>
         </motion.div>
       </div>
@@ -201,29 +201,29 @@ export function SectionHeroSlide({ section, title, subtitle, icon: Icon, variant
   const config = variants[variant] || variants.calendar;
 
   return (
-    <div className="relative min-h-[500px] flex items-center justify-center overflow-hidden rounded-3xl">
+    <div className="relative min-h-[400px] sm:min-h-[450px] md:min-h-[500px] flex items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl">
       {isDark && <AnimatedBackground variant={config.bg} />}
       {!isDark && (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-100 rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-100 rounded-2xl sm:rounded-3xl" />
       )}
 
-      <div className="relative z-10 text-center px-8">
+      <div className="relative z-10 text-center px-4 sm:px-6 md:px-8">
         {/* Section badge */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
+          className="mb-4 sm:mb-6"
         >
           <span className={`
-            inline-flex items-center gap-2 px-4 py-2
+            inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2
             rounded-full backdrop-blur-sm
-            text-sm font-bold uppercase tracking-wider
+            text-xs sm:text-sm font-bold uppercase tracking-wider
             ${isDark
               ? 'bg-white/10 text-white/80'
               : 'bg-white/80 text-slate-600 shadow-sm'
             }
           `}>
-            <Sparkles size={16} />
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             {section}
           </span>
         </motion.div>
@@ -235,12 +235,12 @@ export function SectionHeroSlide({ section, title, subtitle, icon: Icon, variant
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
             className={`
-              inline-flex items-center justify-center w-20 h-20 mb-6
-              rounded-2xl bg-gradient-to-br ${config.gradient}
+              inline-flex items-center justify-center w-14 h-14 sm:w-20 sm:h-20 mb-4 sm:mb-6
+              rounded-xl sm:rounded-2xl bg-gradient-to-br ${config.gradient}
               shadow-2xl
             `}
           >
-            <Icon className="w-10 h-10 text-white" />
+            <Icon className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
           </motion.div>
         )}
 
@@ -249,7 +249,7 @@ export function SectionHeroSlide({ section, title, subtitle, icon: Icon, variant
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className={`text-5xl md:text-6xl font-black mb-4 ${isDark ? 'text-white' : 'text-slate-800'}`}
+          className={`text-3xl sm:text-5xl md:text-6xl font-black mb-3 sm:mb-4 ${isDark ? 'text-white' : 'text-slate-800'}`}
         >
           {title}
         </motion.h2>
@@ -260,7 +260,7 @@ export function SectionHeroSlide({ section, title, subtitle, icon: Icon, variant
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className={`text-xl max-w-xl mx-auto ${isDark ? 'text-white/60' : 'text-slate-600'}`}
+            className={`text-base sm:text-xl max-w-xl mx-auto ${isDark ? 'text-white/60' : 'text-slate-600'}`}
           >
             {subtitle}
           </motion.p>

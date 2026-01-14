@@ -494,7 +494,7 @@ function App() {
       />
 
       {/* Main slide content with scrolling */}
-      <div className="relative z-10 h-full pt-16 pb-20 px-2 sm:px-4 md:px-6 overflow-hidden">
+      <div className="relative z-10 h-full pt-12 sm:pt-16 pb-24 sm:pb-28 md:pb-32 px-2 sm:px-4 md:px-6 overflow-hidden">
         <SlideContainer
           slideKey={currentSlide}
           direction={directionRef.current}
