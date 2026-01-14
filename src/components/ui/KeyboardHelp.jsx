@@ -20,9 +20,10 @@ export function KeyboardHelp({ isOpen, onClose }) {
       category: 'Controls',
       items: [
         { keys: ['P'], action: 'Open presenter view' },
+        { keys: ['F'], action: 'Toggle fullscreen' },
         { keys: ['T'], action: 'Toggle dark/light theme' },
         { keys: ['?'], action: 'Show this help' },
-        { keys: ['Esc'], action: 'Close modals' },
+        { keys: ['Esc'], action: 'Close modals / Exit fullscreen' },
       ]
     },
     {

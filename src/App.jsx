@@ -113,7 +113,20 @@ function App() {
     return () => channel.close();
   }, [nextStep, prevStep]);
 
-  // Keyboard shortcuts for presenter mode and help
+  // Fullscreen toggle function
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  };
+
+  // Keyboard shortcuts for presenter mode, fullscreen, and help
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Don't trigger if typing in an input
@@ -123,6 +136,9 @@ function App() {
         if (!isPresenterView) {
           openPresenterView();
         }
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
       } else if (e.key === '?') {
         e.preventDefault();
         setShowKeyboardHelp(prev => !prev);

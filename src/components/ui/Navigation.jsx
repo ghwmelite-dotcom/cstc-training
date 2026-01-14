@@ -1,5 +1,6 @@
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Presentation, Home, Sun, Moon, LogOut } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Presentation, Home, Sun, Moon, LogOut, Maximize2, Minimize2 } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
 
 export function Navigation({
@@ -15,6 +16,34 @@ export function Navigation({
   totalSlides,
 }) {
   const { isDark, toggleTheme } = useTheme();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Track fullscreen state changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  }, []);
 
   return (
     <motion.div
@@ -94,6 +123,26 @@ export function Navigation({
             transition={{ duration: 0.3 }}
           >
             {isDark ? <Sun className="w-4 h-4 sm:w-[18px] sm:h-[18px]" /> : <Moon className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />}
+          </motion.div>
+        </NavButton>
+
+        {/* Fullscreen Toggle */}
+        <NavButton
+          onClick={toggleFullscreen}
+          active={isFullscreen}
+          title={isFullscreen ? 'Exit Fullscreen (F)' : 'Enter Fullscreen (F)'}
+          isDark={isDark}
+        >
+          <motion.div
+            initial={false}
+            animate={{ scale: isFullscreen ? 0.9 : 1 }}
+            transition={{ duration: 0.2, type: 'spring', stiffness: 300 }}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+            ) : (
+              <Maximize2 className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+            )}
           </motion.div>
         </NavButton>
 
