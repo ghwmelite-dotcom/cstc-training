@@ -39,6 +39,7 @@ import {
 import { TrelloDemo } from './components/demos/TrelloDemo';
 import { CalendarDemo } from './components/demos/CalendarDemo';
 import { AsanaDemo } from './components/demos/AsanaDemo';
+import { PracticePlatform } from './components/practice/PracticePlatform';
 
 import { slidesConfig } from './data/slides.jsx';
 
@@ -402,6 +403,12 @@ function App() {
         case 'allguides':
           component = (
             <AllGuidesDownloadSlide />
+          );
+          break;
+
+        case 'practice':
+          component = (
+            <PracticePlatform />
           );
           break;
 

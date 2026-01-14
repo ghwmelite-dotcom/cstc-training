@@ -939,6 +939,37 @@ Take a moment to download these - tap any card for individual guides, or the big
   },
 
   // ============================================
+  // PRACTICE PLATFORM
+  // ============================================
+  {
+    id: 'practice-platform',
+    type: 'practice',
+    title: 'Interactive Practice Lab',
+    subtitle: 'Master Google Calendar & Trello with hands-on challenges',
+    icon: GraduationCap,
+    accent: 'cyan',
+    steps: 1,
+    notes: {
+      say: `Now for the fun part - let's practice!
+
+This is our Interactive Practice Lab. You can choose to practice either Google Calendar or Trello.
+
+Each tool has guided challenges that will walk you through the key features. You'll earn points as you complete them, and you can track your progress.
+
+Take your time and explore. The best way to learn is by doing!
+
+I'll be walking around to help. Choose Calendar or Trello and start practicing!`,
+      do: [
+        'Walk around helping people who are stuck',
+        'Celebrate when people complete challenges',
+        'Point out the hint feature for struggling learners'
+      ],
+      keyPoint: 'Hands-on practice is where learning sticks',
+      time: '15 min'
+    }
+  },
+
+  // ============================================
   // CLOSING
   // ============================================
   {
