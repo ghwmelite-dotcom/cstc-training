@@ -561,10 +561,23 @@ export function TrelloPractice({ onComplete, progress }) {
   const [newCardTitle, setNewCardTitle] = useState('');
   const [showHint, setShowHint] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successChallenge, setSuccessChallenge] = useState(null);
   const [draggedCard, setDraggedCard] = useState(null);
   const [draggedFromList, setDraggedFromList] = useState(null);
   const [dropTargetList, setDropTargetList] = useState(null);
   const startTimeRef = useRef(null);
+  const isCheckingRef = useRef(false);
+  const successTimeoutRef = useRef(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+      isCheckingRef.current = false;
+    };
+  }, []);
 
   // Handle drag start
   const handleDragStart = (e, card, listId) => {
@@ -664,26 +677,51 @@ export function TrelloPractice({ onComplete, progress }) {
 
   // Check challenge completion
   useEffect(() => {
-    if (!activeChallenge) return;
+    // Skip if no active challenge, showing success, or already checking
+    if (!activeChallenge || showSuccess || isCheckingRef.current) return;
 
-    const isComplete = activeChallenge.validation(lists, actions);
-    if (isComplete) {
-      const timeSpent = (Date.now() - startTimeRef.current) / 1000;
+    // Skip if already completed
+    if (completedChallenges.includes(activeChallenge.id)) return;
 
-      setCompletedChallenges(prev => [...prev, activeChallenge.id]);
-      setShowSuccess(true);
+    // Run validation
+    try {
+      const isComplete = activeChallenge.validation(lists, actions);
+      console.log(`Checking Trello challenge ${activeChallenge.id}:`, isComplete);
 
-      onComplete?.(activeChallenge.id, activeChallenge.points, timeSpent);
+      if (isComplete) {
+        isCheckingRef.current = true;
+        const timeSpent = startTimeRef.current ? (Date.now() - startTimeRef.current) / 1000 : 0;
 
-      setTimeout(() => {
-        setActiveChallenge(null);
-        setShowSuccess(false);
-      }, 2000);
+        console.log(`Trello challenge ${activeChallenge.id} completed! Points: ${activeChallenge.points}`);
+
+        setCompletedChallenges(prev => [...prev, activeChallenge.id]);
+        setSuccessChallenge(activeChallenge);
+        setShowSuccess(true);
+
+        onComplete?.(activeChallenge.id, activeChallenge.points, timeSpent);
+
+        // Clear previous timeout if exists
+        if (successTimeoutRef.current) {
+          clearTimeout(successTimeoutRef.current);
+        }
+
+        successTimeoutRef.current = setTimeout(() => {
+          setActiveChallenge(null);
+          setShowSuccess(false);
+          setSuccessChallenge(null);
+          isCheckingRef.current = false;
+          successTimeoutRef.current = null;
+        }, 2500);
+      }
+    } catch (err) {
+      console.error('Trello validation error:', err);
     }
-  }, [lists, actions, activeChallenge, onComplete]);
+  }, [lists, actions, activeChallenge, showSuccess, completedChallenges, onComplete]);
 
   // Start challenge
   const handleStartChallenge = (challenge) => {
+    console.log('Starting Trello challenge:', challenge.id, challenge.title);
+    isCheckingRef.current = false;
     setActiveChallenge(challenge);
     startTimeRef.current = Date.now();
     setShowHint(false);
@@ -691,10 +729,20 @@ export function TrelloPractice({ onComplete, progress }) {
 
   // Reset
   const handleReset = () => {
+    // Clear any pending timeout
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+      successTimeoutRef.current = null;
+    }
+
     setLists(initialLists);
     setActions([]);
     setActiveChallenge(null);
     setCompletedChallenges([]);
+    setShowSuccess(false);
+    setSuccessChallenge(null);
+    isCheckingRef.current = false;
+    startTimeRef.current = null;
   };
 
   return (
@@ -1027,7 +1075,7 @@ export function TrelloPractice({ onComplete, progress }) {
                 className="flex items-center justify-center gap-2 text-amber-400"
               >
                 <Star className="w-5 h-5" />
-                <span className="text-xl font-bold">+{activeChallenge?.points} points</span>
+                <span className="text-xl font-bold">+{successChallenge?.points || 0} points</span>
               </motion.div>
             </div>
 

@@ -470,8 +470,20 @@ export function CalendarPractice({ onComplete, progress }) {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showHint, setShowHint] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const timerRef = useRef(null);
+  const [successChallenge, setSuccessChallenge] = useState(null);
   const startTimeRef = useRef(null);
+  const isCheckingRef = useRef(false);
+  const successTimeoutRef = useRef(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+      isCheckingRef.current = false;
+    };
+  }, []);
 
   // Handle slot click
   const handleSlotClick = (day, hour) => {
@@ -481,43 +493,95 @@ export function CalendarPractice({ onComplete, progress }) {
 
   // Handle event save
   const handleSaveEvent = useCallback((newEvent) => {
-    setEvents(prev => [...prev, newEvent]);
+    console.log('Saving event:', newEvent);
+    setEvents(prev => {
+      const updated = [...prev, newEvent];
+      console.log('Updated events:', updated);
+      return updated;
+    });
   }, []);
 
-  // Check challenge completion
-  useEffect(() => {
-    if (!activeChallenge) return;
+  // Handle challenge completion
+  const handleChallengeComplete = useCallback((challenge) => {
+    if (isCheckingRef.current) return;
+    isCheckingRef.current = true;
 
-    const isComplete = activeChallenge.validation(events);
-    if (isComplete) {
-      const timeSpent = (Date.now() - startTimeRef.current) / 1000;
+    const timeSpent = startTimeRef.current ? (Date.now() - startTimeRef.current) / 1000 : 0;
 
-      setCompletedChallenges(prev => [...prev, activeChallenge.id]);
-      setShowSuccess(true);
+    console.log(`Challenge ${challenge.id} completed! Points: ${challenge.points}`);
 
-      // Notify parent
-      onComplete?.(activeChallenge.id, activeChallenge.points, timeSpent);
+    setCompletedChallenges(prev => [...prev, challenge.id]);
+    setSuccessChallenge(challenge);
+    setShowSuccess(true);
 
-      // Clear after delay
-      setTimeout(() => {
-        setActiveChallenge(null);
-        setShowSuccess(false);
-      }, 2000);
+    // Notify parent
+    onComplete?.(challenge.id, challenge.points, timeSpent);
+
+    // Clear previous timeout if exists
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
     }
-  }, [events, activeChallenge, onComplete]);
+
+    // Clear after delay
+    successTimeoutRef.current = setTimeout(() => {
+      setActiveChallenge(null);
+      setShowSuccess(false);
+      setSuccessChallenge(null);
+      isCheckingRef.current = false;
+      successTimeoutRef.current = null;
+    }, 2500);
+  }, [onComplete]);
+
+  // Check challenge completion when events change
+  useEffect(() => {
+    // Skip if no active challenge, showing success, or already checking
+    if (!activeChallenge || showSuccess || isCheckingRef.current) return;
+
+    // Skip if already completed
+    if (completedChallenges.includes(activeChallenge.id)) return;
+
+    // Run validation
+    try {
+      const isComplete = activeChallenge.validation(events);
+      console.log(`Checking challenge ${activeChallenge.id}:`, isComplete, 'Events:', events.length);
+
+      if (isComplete) {
+        handleChallengeComplete(activeChallenge);
+      }
+    } catch (err) {
+      console.error('Validation error:', err);
+    }
+  }, [events, activeChallenge, showSuccess, completedChallenges, handleChallengeComplete]);
 
   // Start challenge
-  const handleStartChallenge = (challenge) => {
+  const handleStartChallenge = useCallback((challenge) => {
+    console.log('Starting challenge:', challenge.id, challenge.title);
+
+    // Reset checking flag
+    isCheckingRef.current = false;
+
+    // Set challenge state
     setActiveChallenge(challenge);
     startTimeRef.current = Date.now();
     setShowHint(false);
-  };
+  }, []);
 
   // Reset practice
   const handleReset = () => {
+    // Clear any pending timeout
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+      successTimeoutRef.current = null;
+    }
+
+    // Reset all state
     setEvents([]);
     setActiveChallenge(null);
     setCompletedChallenges([]);
+    setShowSuccess(false);
+    setSuccessChallenge(null);
+    isCheckingRef.current = false;
+    startTimeRef.current = null;
   };
 
   // Get color gradient for event
@@ -845,7 +909,7 @@ export function CalendarPractice({ onComplete, progress }) {
                 className="flex items-center justify-center gap-2 text-amber-400"
               >
                 <Star className="w-5 h-5" />
-                <span className="text-xl font-bold">+{activeChallenge?.points} points</span>
+                <span className="text-xl font-bold">+{successChallenge?.points || 0} points</span>
               </motion.div>
             </div>
 
