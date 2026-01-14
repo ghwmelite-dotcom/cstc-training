@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import {
   Plus,
@@ -144,48 +145,54 @@ function CardModal({ isOpen, onClose, card, onSave, onDelete, isDark }) {
     onClose();
   };
 
-  if (!isOpen) return null;
+  const handleClose = (e) => {
+    if (e) e.stopPropagation();
+    onClose();
+  };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-      >
+      {isOpen && (
         <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className={`w-full max-w-lg rounded-2xl shadow-2xl border overflow-hidden ${
-            isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
-          }`}
-          onClick={(e) => e.stopPropagation()}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          style={{ zIndex: 99999 }}
+          onClick={handleClose}
         >
-          {/* Header */}
-          <div className={`px-6 py-4 border-b flex items-center justify-between ${
-            isDark ? 'border-slate-700' : 'border-slate-200'
-          }`}>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Card title..."
-              className={`text-xl font-bold bg-transparent focus:outline-none flex-1 ${
-                isDark ? 'text-white placeholder:text-white/40' : 'text-slate-800 placeholder:text-slate-400'
-              }`}
-            />
-            <button
-              onClick={onClose}
-              className={`p-2 rounded-lg transition-colors ${
-                isDark ? 'hover:bg-white/10 text-white/60' : 'hover:bg-slate-100 text-slate-400'
-              }`}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className={`w-full max-w-lg rounded-2xl shadow-2xl border overflow-hidden ${
+              isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className={`px-6 py-4 border-b flex items-center justify-between ${
+              isDark ? 'border-slate-700' : 'border-slate-200'
+            }`}>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Card title..."
+                className={`text-xl font-bold bg-transparent focus:outline-none flex-1 ${
+                  isDark ? 'text-white placeholder:text-white/40' : 'text-slate-800 placeholder:text-slate-400'
+                }`}
+              />
+              <button
+                type="button"
+                onClick={handleClose}
+                className={`p-2 rounded-lg transition-colors ${
+                  isDark ? 'hover:bg-white/10 text-white/60' : 'hover:bg-slate-100 text-slate-400'
+                }`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
           <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
             {/* Labels */}
@@ -197,7 +204,12 @@ function CardModal({ isOpen, onClose, card, onSave, onDelete, isDark }) {
                 {labelColors.map((label) => (
                   <motion.button
                     key={label.id}
-                    onClick={() => toggleLabel(label.id)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleLabel(label.id);
+                    }}
                     className={`px-3 py-1.5 rounded-lg text-white text-sm font-medium transition-all ${label.bg} ${
                       labels.includes(label.id)
                         ? 'ring-2 ring-offset-2 ring-white/50 shadow-lg ' + label.glow
@@ -263,7 +275,12 @@ function CardModal({ isOpen, onClose, card, onSave, onDelete, isDark }) {
                     whileHover={{ x: 2 }}
                   >
                     <button
-                      onClick={() => toggleCheckItem(item.id)}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleCheckItem(item.id);
+                      }}
                       className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                         item.done
                           ? 'bg-emerald-500 border-emerald-500'
@@ -298,7 +315,12 @@ function CardModal({ isOpen, onClose, card, onSave, onDelete, isDark }) {
                   }`}
                 />
                 <motion.button
-                  onClick={addCheckItem}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addCheckItem();
+                  }}
                   className="px-3 py-2 bg-indigo-500 text-white rounded-lg"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -309,41 +331,56 @@ function CardModal({ isOpen, onClose, card, onSave, onDelete, isDark }) {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className={`px-6 py-4 border-t flex justify-between ${
-            isDark ? 'border-slate-700' : 'border-slate-200'
-          }`}>
-            {card?.id && (
+            {/* Actions */}
+            <div className={`px-6 py-4 border-t flex justify-between ${
+              isDark ? 'border-slate-700' : 'border-slate-200'
+            }`}>
+              {card?.id && (
+                <motion.button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onDelete(card.id);
+                    onClose();
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </motion.button>
+              )}
               <motion.button
-                onClick={() => {
-                  onDelete(card.id);
-                  onClose();
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSave();
                 }}
-                className="flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                disabled={!title.trim()}
+                className={`flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg font-medium shadow-lg shadow-indigo-500/25 ml-auto ${
+                  !title.trim() ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                whileHover={title.trim() ? { scale: 1.02 } : {}}
+                whileTap={title.trim() ? { scale: 0.98 } : {}}
               >
-                <Trash2 className="w-4 h-4" />
-                Delete
+                <Check className="w-4 h-4" />
+                Save Card
               </motion.button>
-            )}
-            <motion.button
-              onClick={handleSave}
-              disabled={!title.trim()}
-              className={`flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg font-medium shadow-lg shadow-indigo-500/25 ml-auto ${
-                !title.trim() ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              whileHover={title.trim() ? { scale: 1.02 } : {}}
-              whileTap={title.trim() ? { scale: 0.98 } : {}}
-            >
-              <Check className="w-4 h-4" />
-              Save Card
-            </motion.button>
-          </div>
+            </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </AnimatePresence>
   );
+
+  // Render modal in a portal at document.body level
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+  return modalContent;
 }
 
 // Single Trello card component

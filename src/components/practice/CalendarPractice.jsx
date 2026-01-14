@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar,
@@ -97,6 +98,20 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
   const [reminder, setReminder] = useState(false);
   const [hasVideo, setHasVideo] = useState(false);
 
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      // Reset to defaults when opening
+      setTitle('');
+      setDuration(1);
+      setColor('blue');
+      setLocation('');
+      setAttendees('');
+      setReminder(false);
+      setHasVideo(false);
+    }
+  }, [isOpen]);
+
   const handleSave = () => {
     if (!title.trim()) return;
 
@@ -113,39 +128,37 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
       hasVideo,
     });
 
-    // Reset form
-    setTitle('');
-    setDuration(1);
-    setColor('blue');
-    setLocation('');
-    setAttendees('');
-    setReminder(false);
-    setHasVideo(false);
     onClose();
   };
 
-  if (!isOpen) return null;
+  const handleClose = (e) => {
+    if (e) e.stopPropagation();
+    onClose();
+  };
 
-  return (
+  // Use Portal to render modal at document.body level
+  const modalContent = (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-      >
+      {isOpen && (
         <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className={`w-full max-w-md rounded-2xl p-6 shadow-2xl border ${
-            isDark
-              ? 'bg-slate-800 border-slate-700'
-              : 'bg-white border-slate-200'
-          }`}
-          onClick={(e) => e.stopPropagation()}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+          style={{ zIndex: 99999 }}
+          onClick={handleClose}
         >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className={`w-full max-w-md rounded-2xl p-6 shadow-2xl border max-h-[90vh] overflow-y-auto ${
+              isDark
+                ? 'bg-slate-800 border-slate-700'
+                : 'bg-white border-slate-200'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -162,7 +175,8 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
               </div>
             </div>
             <button
-              onClick={onClose}
+              type="button"
+              onClick={handleClose}
               className={`p-2 rounded-lg transition-colors ${
                 isDark ? 'hover:bg-white/10 text-white/60' : 'hover:bg-slate-100 text-slate-400'
               }`}
@@ -201,7 +215,12 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
                 {[0.5, 1, 1.5, 2, 3].map((d) => (
                   <button
                     key={d}
-                    onClick={() => setDuration(d)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setDuration(d);
+                    }}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                       duration === d
                         ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white'
@@ -225,7 +244,12 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
                 {eventColors.map((c) => (
                   <motion.button
                     key={c.id}
-                    onClick={() => setColor(c.id)}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setColor(c.id);
+                    }}
                     className={`w-10 h-10 rounded-xl ${c.bg} ${
                       color === c.id ? 'ring-2 ring-offset-2 ring-cyan-400' : ''
                     }`}
@@ -308,7 +332,8 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
           {/* Actions */}
           <div className="flex gap-3 mt-6">
             <button
-              onClick={onClose}
+              type="button"
+              onClick={handleClose}
               className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
                 isDark
                   ? 'bg-slate-700 text-white/80 hover:bg-slate-600'
@@ -318,7 +343,12 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
               Cancel
             </button>
             <motion.button
-              onClick={handleSave}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSave();
+              }}
               disabled={!title.trim()}
               className={`flex-1 py-3 rounded-xl font-medium bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/25 ${
                 !title.trim() ? 'opacity-50 cursor-not-allowed' : ''
@@ -332,10 +362,17 @@ function EventModal({ isOpen, onClose, onSave, slotInfo, isDark }) {
               </span>
             </motion.button>
           </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </AnimatePresence>
   );
+
+  // Render modal in a portal at document.body level
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+  return modalContent;
 }
 
 // Challenge card
